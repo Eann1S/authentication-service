@@ -1,0 +1,28 @@
+services:
+  authentication-service-database:
+    container_name: redis
+    image: postgres:alpine3.17
+    hostname: authentication-service-database
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: authentication-service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      PGDATA: /data/postgres
+    volumes:
+      - authentication-service-data:/data/postgres
+
+  redis:
+    container_name: redis
+    image: redis:7.2-rc-alpine3.18
+    hostname: redis
+    restart: unless-stopped
+    pull_policy: missing
+    ports:
+      - 6379:6379
+
+volumes:
+  authentication-service-data: {}
