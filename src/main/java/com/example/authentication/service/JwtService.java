@@ -1,5 +1,6 @@
 package com.example.authentication.service;
 
+import com.example.authentication.exception.EmptyAuthenticationHeaderException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -12,46 +13,56 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 
+import static com.example.authentication.constants.CachePrefix.JWT_CACHE_PREFIX;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 @Service
 @RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${JWT_SECRET_KEY}")
+    @Value("${secret.key}")
     private String secretKey;
     private final MessageGenerator messageGenerator;
+    private final CacheService cacheService;
 
-    public String generateJwt(UserDetails userDetails) {
-        return Jwts.builder()
+    String generateJwt(UserDetails userDetails) {
+        String jwt = Jwts.builder()
                 .setClaims(new HashMap<>())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 3600 * 24))
                 .signWith(getSignInKey(secretKey))
                 .compact();
+
+        String email = userDetails.getUsername();
+        cacheService.storeInCache(JWT_CACHE_PREFIX.formatted(email), jwt, Duration.ofDays(1));
+        return jwt;
     }
 
-    public boolean isJwtValid(String jwt, UserDetails userDetails) {
-        String email = extractEmail(jwt);
+    void invalidateJwtByEmail(String email) {
+        cacheService.deleteFromCache(JWT_CACHE_PREFIX.formatted(email));
+    }
+
+    boolean isJwtValid(String jwt, UserDetails userDetails) {
+        String email = extractEmailFromJwt(jwt);
         return email.equals(userDetails.getUsername()) && !isJwtExpired(jwt);
     }
 
-    public String extractEmail(String jwt) {
+    String extractEmailFromJwt(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
     }
 
-    public String getJwtFromRequest(HttpServletRequest httpRequest) {
+    String getJwtFromRequest(HttpServletRequest httpRequest) {
         String header = httpRequest.getHeader(AUTHORIZATION);
         if (StringUtils.isBlank(header) || !header.startsWith("Bearer ")) {
-            throw new NoSuchElementException(messageGenerator.generateMessage("error.header.is_empty", AUTHORIZATION));
+            throw new EmptyAuthenticationHeaderException(messageGenerator.generateMessage("error.header.is_empty", AUTHORIZATION));
         }
-        return header.substring(7);
+        return header.split(" ")[1].trim();
     }
 
     private boolean isJwtExpired(String jwt) {

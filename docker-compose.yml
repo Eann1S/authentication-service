@@ -1,6 +1,6 @@
 services:
   authentication-service-database:
-    container_name: redis
+    container_name: authentication-service-database
     image: postgres:alpine3.17
     hostname: authentication-service-database
     restart: unless-stopped
@@ -15,10 +15,10 @@ services:
     volumes:
       - authentication-service-data:/data/postgres
 
-  redis:
-    container_name: redis
+  authentication-service-cache:
+    container_name: authentication-service-cache
     image: redis:7.2-rc-alpine3.18
-    hostname: redis
+    hostname: authentication-service-cache
     restart: unless-stopped
     pull_policy: missing
     ports:
