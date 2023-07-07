@@ -1,12 +1,17 @@
 package com.example.authentication.service;
 
+import com.example.authentication.constants.Operation;
+import com.example.authentication.dto.message.Message;
 import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.dto.request.EmailRegisterRequest;
 import com.example.authentication.dto.response.JwtResponse;
 import com.example.authentication.dto.response.MessageResponse;
+import com.example.authentication.dto.response.UserResponse;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.Role;
 import com.example.authentication.exception.EntityAlreadyExistsException;
+import com.example.authentication.producer.KafkaProducer;
+import com.google.common.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +29,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final MessageGenerator messageGenerator;
     private final AuthenticationProvider authenticationProvider;
+    private final KafkaProducer kafkaProducer;
 
     public ResponseEntity<MessageResponse> registerWithEmail(EmailRegisterRequest request) {
         if (accountService.isAccountExistsByEmail(request.email())) {
@@ -33,7 +39,11 @@ public class AuthenticationService {
         Account account = accountService.createAccountFromRegisterRequest(request, Role.USER, false);
         log.info("account created with email {} and id {}", account.getEmail(), account.getId());
 
-        // TODO: publish message to message queue
+        Message<UserResponse> message = Message.valueOf(
+                UserResponse.valueOf(request.username(), request.email()),
+                Operation.ADD
+        );
+        kafkaProducer.send(message, new TypeToken<Message<UserResponse>>(){}.getType());
 
         return ResponseEntity.ok(
                 new MessageResponse(messageGenerator.generateMessage("account.creation.success", account.getEmail()))

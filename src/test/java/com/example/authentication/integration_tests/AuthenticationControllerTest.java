@@ -1,9 +1,13 @@
 package com.example.authentication.integration_tests;
 
+import com.example.authentication.dto.message.Message;
 import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.dto.request.EmailRegisterRequest;
+import com.example.authentication.dto.response.UserResponse;
 import com.example.authentication.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,8 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private final AccountService accountService;
     private final AuthenticationService authenticationService;
     private final CacheService cacheService;
+    private final TestKafkaConsumer testKafkaConsumer;
+    private final Gson gson;
     @MockBean
     private final EmailService emailService;
 
@@ -53,6 +59,11 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                         .value(messageGenerator.generateMessage("account.creation.success", registerRequest.email()))
         );
         assertThat(accountService.isAccountExistsByEmail(registerRequest.email())).isTrue();
+
+        assertThat(testKafkaConsumer.getMessagePayload()).isNotNull();
+        Message<UserResponse> message = gson.fromJson(testKafkaConsumer.getMessagePayload(), new TypeToken<Message<UserResponse>>() {});
+        assertThat(message.entity().email()).isEqualTo(registerRequest.email());
+        assertThat(message.entity().username()).isEqualTo(registerRequest.username());
 
         performRequest(
                 post(REGISTER_URL)

@@ -1,6 +1,12 @@
 package com.example.authentication.integration_tests;
 
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestComponent;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -11,7 +17,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.concurrent.CountDownLatch;
+
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
+@Import(IntegrationTestBase.TestKafkaConsumer.class)
+@EmbeddedKafka(partitions = 1, brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"})
 @Transactional
 @Testcontainers(parallel = true)
 @ActiveProfiles("test")
@@ -32,4 +42,22 @@ public class IntegrationTestBase {
         registry.add("spring.data.redis.port", redisContainer::getFirstMappedPort);
         registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
     }
+
+    @TestComponent
+    @Slf4j
+    @Getter
+    static class TestKafkaConsumer {
+
+        private CountDownLatch latch = new CountDownLatch(1);
+        private String messagePayload;
+
+        @KafkaListener(topics = "${kafka.topics.authentication-service}")
+        public void receive(String message) {
+            log.info("received message: {}", message);
+            messagePayload = message;
+            latch.countDown();
+        }
+    }
 }
+
+
