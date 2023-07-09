@@ -1,13 +1,12 @@
-package com.example.authentication.integration_tests;
+package com.example.authentication.controller;
 
-import com.example.authentication.dto.message.Message;
+import com.example.authentication.IntegrationTestBase;
+import com.example.authentication.dto.message.UserMessage;
 import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.dto.request.EmailRegisterRequest;
-import com.example.authentication.dto.response.UserResponse;
 import com.example.authentication.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +19,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static com.example.authentication.constants.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
-import static com.example.authentication.constants.CachePrefix.JWT_CACHE_PREFIX;
-import static com.example.authentication.integration_tests.constants.GlobalConstants.*;
-import static com.example.authentication.integration_tests.constants.UrlConstants.*;
+import java.util.concurrent.TimeUnit;
+
+import static com.example.authentication.constant.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
+import static com.example.authentication.constant.CachePrefix.JWT_CACHE_PREFIX;
+import static com.example.authentication.constant.GlobalConstants.*;
+import static com.example.authentication.constant.UrlConstants.*;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.*;
@@ -41,14 +42,14 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private final AccountService accountService;
     private final AuthenticationService authenticationService;
     private final CacheService cacheService;
-    private final TestKafkaConsumer testKafkaConsumer;
+    private final TestKafkaConsumerService testKafkaConsumerService;
     private final Gson gson;
     @MockBean
     private final EmailService emailService;
 
     @Test
     public void registerTest() throws Exception {
-        EmailRegisterRequest registerRequest = buildEmailRegisterRequest(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD);
+        EmailRegisterRequest registerRequest = new EmailRegisterRequest(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD);
 
         performRequest(
                 post(REGISTER_URL)
@@ -60,10 +61,12 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         );
         assertThat(accountService.isAccountExistsByEmail(registerRequest.email())).isTrue();
 
-        assertThat(testKafkaConsumer.getMessagePayload()).isNotNull();
-        Message<UserResponse> message = gson.fromJson(testKafkaConsumer.getMessagePayload(), new TypeToken<Message<UserResponse>>() {});
-        assertThat(message.entity().email()).isEqualTo(registerRequest.email());
-        assertThat(message.entity().username()).isEqualTo(registerRequest.username());
+        testKafkaConsumerService.getLatch().await(5, TimeUnit.SECONDS);
+        assertThat(testKafkaConsumerService.getMessagePayload()).isNotNull();
+
+        UserMessage userMessage = gson.fromJson(testKafkaConsumerService.getMessagePayload(), UserMessage.class);
+        assertThat(userMessage.user().email()).isEqualTo(registerRequest.email());
+        assertThat(userMessage.user().username()).isEqualTo(registerRequest.username());
 
         performRequest(
                 post(REGISTER_URL)
@@ -77,8 +80,8 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @Test
     public void loginTest() throws Exception {
-        registerTestAccount(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD);
-        EmailLoginRequest loginRequest = buildEmailLoginRequest(TEST_EMAIL, TEST_PASSWORD);
+        registerTestAccountWithDefaults(authenticationService::registerWithEmail);
+        EmailLoginRequest loginRequest = new EmailLoginRequest(TEST_EMAIL, TEST_PASSWORD);
 
         performRequest(
                 post(LOGIN_URL)
@@ -90,7 +93,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         String jwt = cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
         assertThat(jwt).isNotNull();
 
-        loginRequest = buildEmailLoginRequest(TEST_EMAIL, "invalid password");
+        loginRequest = new EmailLoginRequest(TEST_EMAIL, "invalid password");
         performRequest(
                 post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +115,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @Test
     public void sendActivationCodeAndConfirmEmailTest() throws Exception {
-        registerTestAccount(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD);
+        registerTestAccountWithDefaults(authenticationService::registerWithEmail);
 
         performRequest(
                 post(SEND_ACTIVATION_CODE_URL)
@@ -156,26 +159,5 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     private void expectResult(ResultActions resultActions, ResultMatcher... resultMatcher) throws Exception {
         resultActions.andExpectAll(resultMatcher);
-    }
-
-    private void registerTestAccount(String username, String email, String password) {
-        authenticationService.registerWithEmail(
-                buildEmailRegisterRequest(username, email, password)
-        );
-    }
-
-    private EmailLoginRequest buildEmailLoginRequest(String email, String password) {
-        return EmailLoginRequest.builder()
-                .email(email)
-                .password(password)
-                .build();
-    }
-
-    private EmailRegisterRequest buildEmailRegisterRequest(String username, String email, String password) {
-        return EmailRegisterRequest.builder()
-                .username(username)
-                .email(email)
-                .password(password)
-                .build();
     }
 }

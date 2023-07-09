@@ -1,4 +1,4 @@
-package com.example.authentication.integration_tests.constants;
+package com.example.authentication.constant;
 
 public class UrlConstants {
 

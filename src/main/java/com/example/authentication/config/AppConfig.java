@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,10 +22,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
         "classpath:${envTarget:errors}.properties",
         "classpath:${envTarget:messages}.properties"
 })
+@EnableAsync
 public class AppConfig {
 
     private final AccountRepository accountRepository;
     private final MessageGenerator messageGenerator;
+
+    @Bean
+    public TaskExecutor kafkaConsumerExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(20);
+        executor.setThreadNamePrefix("KafkaConsumerService-");
+        executor.initialize();
+        return executor;
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

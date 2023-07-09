@@ -1,4 +1,4 @@
-package com.example.authentication.constants;
+package com.example.authentication.constant;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum Operation {
 
-    ADD("ADD"),
+    CREATE("CREATE"),
     UPDATE("UPDATE"),
     DELETE("DELETE");
 

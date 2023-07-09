@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.function.Function;
 
-import static com.example.authentication.constants.CachePrefix.JWT_CACHE_PREFIX;
+import static com.example.authentication.constant.CachePrefix.JWT_CACHE_PREFIX;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 @Service

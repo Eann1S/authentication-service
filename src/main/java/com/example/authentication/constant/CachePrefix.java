@@ -1,4 +1,4 @@
-package com.example.authentication.constants;
+package com.example.authentication.constant;
 
 public class CachePrefix {
 

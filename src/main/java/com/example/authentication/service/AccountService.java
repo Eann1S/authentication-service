@@ -33,9 +33,18 @@ public class AccountService {
                 ));
     }
 
-    public Account createAccountFromRegisterRequest(EmailRegisterRequest request, Role role, boolean isEmailConfirmed) {
+    Account createAccountFromRegisterRequest(EmailRegisterRequest request, Role role, boolean isEmailConfirmed) {
         Account account = accountMapper.toEntity(request, passwordEncoder, role, isEmailConfirmed);
         return accountRepository.saveAndFlush(account);
+    }
+
+    void deleteAccountByEmail(String email) {
+        accountRepository.findByEmail(email)
+                .ifPresentOrElse(accountRepository::delete, () -> {
+                    throw new EntityNotFoundException(
+                            messageGenerator.generateMessage("error.entity.not_found", email)
+                    );
+                });
     }
 
     public boolean isAccountExistsByEmail(String email) {

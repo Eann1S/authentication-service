@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.UUID;
 
-import static com.example.authentication.constants.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
+import static com.example.authentication.constant.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
 
 @Service
 @RequiredArgsConstructor

@@ -6,6 +6,7 @@ import com.example.authentication.entity.Role;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Mapper(componentModel = "spring")
@@ -20,4 +21,6 @@ public interface AccountMapper {
     @Mapping(target = "isCredentialsNonExpired", expression = "java(true)")
     @Mapping(target = "isEnabled", expression = "java(true)")
     Account toEntity(EmailRegisterRequest request, @Context PasswordEncoder passwordEncoder, @Context Role role, @Context boolean isEmailConfirmed);
+
+    Account updateAccount(String email, @MappingTarget Account accountToUpdate);
 }

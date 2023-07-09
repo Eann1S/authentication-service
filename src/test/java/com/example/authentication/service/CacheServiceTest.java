@@ -1,6 +1,6 @@
-package com.example.authentication.integration_tests;
+package com.example.authentication.service;
 
-import com.example.authentication.service.CacheService;
+import com.example.authentication.IntegrationTestBase;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;

@@ -24,6 +24,13 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: authentication-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    retry:
+      topic:
+        enabled: true
   mail:
     default-encoding: UTF-8
     username: ${EMAIL_USERNAME}
@@ -47,4 +54,6 @@ secret:
 
 kafka:
   topics:
-    authentication-service: authentication-service-topic
+    authentication-service:
+      consumer: authentication-service-consumer-topic
+      producer: authentication-service-producer-topic
