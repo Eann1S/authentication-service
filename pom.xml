@@ -26,6 +26,7 @@
     </properties>
 
     <dependencies>
+        <!-- *** Awaitility *** -->
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
@@ -217,8 +218,23 @@
                         <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
                     </from>
                     <to>
-                        <image>registry.hub.docker.com/eann1s/telegram-${project.artifactId}:${project.version}</image>
+                        <image>registry.hub.docker.com/eann1s/${project.artifactId}:${project.version}</image>
                     </to>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-XX:+UseSerialGC</jvmFlag>
+                            <jvmFlag>-Xss512k</jvmFlag>
+                            <jvmFlag>-XX:MaxRAM=150m</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                    <extraDirectories>
+                        <paths>
+                            <path>
+                                <from>.idea</from>
+                                <excludes>*.xml,**/*.xml</excludes>
+                            </path>
+                        </paths>
+                    </extraDirectories>
                 </configuration>
             </plugin>
         </plugins>
