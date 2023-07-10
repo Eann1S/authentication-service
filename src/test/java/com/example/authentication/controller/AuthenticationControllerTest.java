@@ -12,13 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static com.example.authentication.constant.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
@@ -27,7 +28,6 @@ import static com.example.authentication.constant.GlobalConstants.*;
 import static com.example.authentication.constant.UrlConstants.*;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,6 +39,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
     private final MessageGenerator messageGenerator;
+    private final MessageSource testMessageSource;
     private final AccountService accountService;
     private final AuthenticationService authenticationService;
     private final CacheService cacheService;
@@ -55,7 +56,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                 post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)),
-                OK,
+                status().isOk(),
                 jsonPath("$.message")
                         .value(messageGenerator.generateMessage("account.creation.success", registerRequest.email()))
         );
@@ -72,9 +73,51 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                 post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)),
-                BAD_REQUEST,
+                status().isBadRequest(),
                 jsonPath("$.message")
                         .value(messageGenerator.generateMessage("error.entity.already_exists", registerRequest.email()))
+        );
+    }
+
+    @Test
+    public void validationTest() throws Exception {
+        EmailRegisterRequest registerRequest = new EmailRegisterRequest(" ", "", "123");
+
+        performRequest(
+                post(REGISTER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)),
+                status().isBadRequest(),
+                jsonPath("$.username")
+                        .value(testMessageSource.getMessage("username.not_blank", null, Locale.getDefault())),
+                jsonPath("$.email")
+                        .value(testMessageSource.getMessage("email.not_blank", null, Locale.getDefault())),
+                jsonPath("$.password")
+                        .value(testMessageSource.getMessage("password.size", new Object[]{8, 25}, Locale.getDefault()))
+        );
+
+        registerRequest = new EmailRegisterRequest(TEST_USERNAME, "invalid email", "          ");
+        performRequest(
+                post(REGISTER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)),
+                status().isBadRequest(),
+                jsonPath("$.email")
+                        .value(testMessageSource.getMessage("email.invalid", null, Locale.getDefault())),
+                jsonPath("$.password")
+                        .value(testMessageSource.getMessage("password.not_blank", null, Locale.getDefault()))
+        );
+
+        EmailLoginRequest loginRequest = new EmailLoginRequest("invalid email", "   ");
+        performRequest(
+                post(LOGIN_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)),
+                status().isBadRequest(),
+                jsonPath("$.email")
+                        .value(testMessageSource.getMessage("email.invalid", null, Locale.getDefault())),
+                jsonPath("$.password")
+                        .value(testMessageSource.getMessage("password.not_blank", null, Locale.getDefault()))
         );
     }
 
@@ -87,7 +130,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                 post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)),
-                OK,
+                status().isOk(),
                 jsonPath("$.jwt").exists()
         );
         String jwt = cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
@@ -98,7 +141,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
                 post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)),
-                FORBIDDEN,
+                status().isForbidden(),
                 jsonPath("$.message")
                         .value(messageGenerator.generateMessage("error.account.invalid_credentials"))
         );
@@ -106,7 +149,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         performRequest(
                 post(LOGOUT_URL)
                         .header(AUTHORIZATION, "Bearer " + jwt),
-                MOVED_TEMPORARILY,
+                status().isMovedTemporarily(),
                 content().string("")
         );
         jwt = cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
@@ -120,7 +163,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         performRequest(
                 post(SEND_ACTIVATION_CODE_URL)
                         .header("userEmail", TEST_EMAIL),
-                OK,
+                status().isOk(),
                 jsonPath("$.message")
                         .value(messageGenerator.generateMessage("activation.send", TEST_EMAIL))
         );
@@ -130,7 +173,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         performRequest(
                 post(CONFIRM_EMAIL_URL, activationCode)
                         .header("userEmail", TEST_EMAIL),
-                OK,
+                status().isOk(),
                 jsonPath("$.message")
                         .value(messageGenerator.generateMessage("activation.success"))
         );
@@ -142,7 +185,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         performRequest(
                 post(CONFIRM_EMAIL_URL, "invalid activation code")
                         .header("userEmail", TEST_EMAIL),
-                BAD_REQUEST,
+                status().isBadRequest(),
                 jsonPath("$.message")
                         .value(messageGenerator.generateMessage("error.activation-code.invalid"))
         );
@@ -150,11 +193,10 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     private void performRequest(
             MockHttpServletRequestBuilder requestBuilder,
-            HttpStatus status,
-            ResultMatcher resultMatcher
+            ResultMatcher... resultMatcher
     ) throws Exception {
         ResultActions resultActions = mockMvc.perform(requestBuilder);
-        expectResult(resultActions, status().is(status.value()), resultMatcher);
+        expectResult(resultActions, resultMatcher);
     }
 
     private void expectResult(ResultActions resultActions, ResultMatcher... resultMatcher) throws Exception {

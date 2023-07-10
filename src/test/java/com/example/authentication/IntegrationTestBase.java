@@ -5,7 +5,11 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestComponent;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,9 +27,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import static com.example.authentication.constant.GlobalConstants.*;
+import static org.apache.commons.codec.CharEncoding.UTF_8;
 
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
-@Import(IntegrationTestBase.TestKafkaConsumerService.class)
+@Import({IntegrationTestBase.TestKafkaConsumerService.class, IntegrationTestBase.TestAppConfig.class})
 @Transactional
 @Testcontainers(parallel = true)
 @ActiveProfiles("test")
@@ -65,6 +70,17 @@ public class IntegrationTestBase {
             log.info("received message: {}", message);
             this.messagePayload = message;
             this.latch.countDown();
+        }
+    }
+
+    @TestConfiguration
+    static class TestAppConfig {
+        @Bean
+        public MessageSource testMessageSource() {
+            ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+            messageSource.setBasename("classpath:validationMessages-test");
+            messageSource.setDefaultEncoding(UTF_8);
+            return messageSource;
         }
     }
 

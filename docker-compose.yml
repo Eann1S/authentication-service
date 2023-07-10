@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     pull_policy: missing
     ports:
-      - 6379:6379
+      - 6380:6379
 
 volumes:
   authentication-service-data: {}

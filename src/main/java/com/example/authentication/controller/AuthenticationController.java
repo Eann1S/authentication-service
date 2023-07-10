@@ -6,6 +6,7 @@ import com.example.authentication.dto.response.JwtResponse;
 import com.example.authentication.dto.response.MessageResponse;
 import com.example.authentication.service.ActivationCodeService;
 import com.example.authentication.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +20,12 @@ public class AuthenticationController {
     private final ActivationCodeService activationCodeService;
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> register(@RequestBody EmailRegisterRequest request) {
+    public ResponseEntity<MessageResponse> register(@Valid @RequestBody EmailRegisterRequest request) {
         return authenticationService.registerWithEmail(request);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody EmailLoginRequest request) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody EmailLoginRequest request) {
         return authenticationService.loginWithEmail(request);
     }
 
