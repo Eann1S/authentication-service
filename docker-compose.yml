@@ -14,6 +14,7 @@ services:
       REDIS_PORT: 6379
       KAFKA_URL: kafka:29092
       DISCOVERY_SERVER_URL: discovery-server:8761
+      CONFIG_SERVER_URL: config-server:8888
 
   authentication-service-database:
     container_name: authentication-service-database
@@ -71,6 +72,13 @@ services:
     pull_policy: missing
     ports:
       - 8761:8761
+
+  config-server:
+    container_name: config-server
+    image: eann1s/cloud-config-server:1.0.0
+    hostname: config-server
+    restart: unless-stopped
+    pull_policy: missing
 
 volumes:
   authentication-service-data: {}

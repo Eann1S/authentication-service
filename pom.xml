@@ -26,6 +26,12 @@
     </properties>
 
     <dependencies>
+        <!-- *** Config server client *** -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
         <!-- *** Awaitility *** -->
         <dependency>
             <groupId>org.awaitility</groupId>
