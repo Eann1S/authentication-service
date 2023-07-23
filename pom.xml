@@ -225,6 +225,9 @@
                     </from>
                     <to>
                         <image>registry.hub.docker.com/eann1s/${project.artifactId}:${project.version}</image>
+                        <tags>
+                            <tag>latest</tag>
+                        </tags>
                     </to>
                     <container>
                         <jvmFlags>
