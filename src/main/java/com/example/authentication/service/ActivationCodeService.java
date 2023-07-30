@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.example.authentication.constant.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
@@ -37,8 +38,8 @@ public class ActivationCodeService {
 
     public ResponseEntity<MessageResponse> confirmEmail(String email, String activationCode) {
         String cacheKey = ACTIVATION_CODE_CACHE_PREFIX.formatted(email);
-        String activationCodeFromCache = cacheService.getFromCache(cacheKey, String.class);
-        if (!StringUtils.equals(activationCode, activationCodeFromCache)) {
+        Optional<String> activationCodeFromCache = cacheService.getFromCache(cacheKey, String.class);
+        if (activationCodeFromCache.isEmpty() || !StringUtils.equals(activationCode, activationCodeFromCache.get())) {
             throw new InvalidActivationCodeException(messageGenerator.generateMessage("error.activation-code.invalid"));
         }
 

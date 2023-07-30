@@ -33,6 +33,7 @@ public class AccountService {
                 ));
     }
 
+    @SuppressWarnings("SameParameterValue")
     Account createAccountFromRegisterRequest(EmailRegisterRequest request, Role role, boolean isEmailConfirmed) {
         Account account = accountMapper.toEntity(request, passwordEncoder, role, isEmailConfirmed);
         return accountRepository.saveAndFlush(account);

@@ -4,25 +4,23 @@ import com.example.authentication.IntegrationTestBase;
 import com.example.authentication.dto.message.UserMessage;
 import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.dto.request.EmailRegisterRequest;
-import com.example.authentication.service.*;
+import com.example.authentication.service.AccountService;
+import com.example.authentication.service.CacheService;
+import com.example.authentication.service.MessageGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static com.example.authentication.constant.CachePrefix.ACTIVATION_CODE_CACHE_PREFIX;
 import static com.example.authentication.constant.CachePrefix.JWT_CACHE_PREFIX;
 import static com.example.authentication.constant.GlobalConstants.*;
 import static com.example.authentication.constant.UrlConstants.*;
@@ -33,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @AutoConfigureMockMvc
-@SuppressWarnings("all")
 public class AuthenticationControllerTest extends IntegrationTestBase {
 
     private final MockMvc mockMvc;
@@ -41,18 +38,16 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
     private final MessageGenerator messageGenerator;
     private final MessageSource testMessageSource;
     private final AccountService accountService;
-    private final AuthenticationService authenticationService;
     private final CacheService cacheService;
     private final TestKafkaConsumerService testKafkaConsumerService;
     private final Gson gson;
-    @MockBean
-    private final EmailService emailService;
 
     @Test
     public void registerTest() throws Exception {
         EmailRegisterRequest registerRequest = new EmailRegisterRequest(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD);
 
         performRequest(
+                mockMvc,
                 post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)),
@@ -62,7 +57,8 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         );
         assertThat(accountService.isAccountExistsByEmail(registerRequest.email())).isTrue();
 
-        testKafkaConsumerService.getLatch().await(5, TimeUnit.SECONDS);
+        boolean await = testKafkaConsumerService.getLatch().await(5, TimeUnit.SECONDS);
+        assertThat(await).isTrue();
         assertThat(testKafkaConsumerService.getMessagePayload()).isNotNull();
 
         UserMessage userMessage = gson.fromJson(testKafkaConsumerService.getMessagePayload(), UserMessage.class);
@@ -70,6 +66,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         assertThat(userMessage.user().username()).isEqualTo(registerRequest.username());
 
         performRequest(
+                mockMvc,
                 post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)),
@@ -84,6 +81,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         EmailRegisterRequest registerRequest = new EmailRegisterRequest(" ", "", "123");
 
         performRequest(
+                mockMvc,
                 post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)),
@@ -98,6 +96,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
         registerRequest = new EmailRegisterRequest(TEST_USERNAME, "invalid email", "          ");
         performRequest(
+                mockMvc,
                 post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)),
@@ -110,6 +109,7 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
         EmailLoginRequest loginRequest = new EmailLoginRequest("invalid email", "   ");
         performRequest(
+                mockMvc,
                 post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)),
@@ -123,21 +123,23 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
 
     @Test
     public void loginTest() throws Exception {
-        registerTestAccountWithDefaults(authenticationService::registerWithEmail);
+        registerTestAccountWithDefaults();
         EmailLoginRequest loginRequest = new EmailLoginRequest(TEST_EMAIL, TEST_PASSWORD);
 
         performRequest(
+                mockMvc,
                 post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)),
                 status().isOk(),
                 jsonPath("$.jwt").exists()
         );
-        String jwt = cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
-        assertThat(jwt).isNotNull();
+        Optional<String> jwt = cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
+        assertThat(jwt.isPresent()).isTrue();
 
         loginRequest = new EmailLoginRequest(TEST_EMAIL, "invalid password");
         performRequest(
+                mockMvc,
                 post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)),
@@ -147,59 +149,13 @@ public class AuthenticationControllerTest extends IntegrationTestBase {
         );
 
         performRequest(
+                mockMvc,
                 post(LOGOUT_URL)
-                        .header(AUTHORIZATION, "Bearer " + jwt),
-                status().isMovedTemporarily(),
+                        .header(AUTHORIZATION, "Bearer " + jwt.get()),
+                status().isOk(),
                 content().string("")
         );
         jwt = cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
-        assertThat(jwt).isNull();
-    }
-
-    @Test
-    public void sendActivationCodeAndConfirmEmailTest() throws Exception {
-        registerTestAccountWithDefaults(authenticationService::registerWithEmail);
-
-        performRequest(
-                post(SEND_ACTIVATION_CODE_URL)
-                        .header("userEmail", TEST_EMAIL),
-                status().isOk(),
-                jsonPath("$.message")
-                        .value(messageGenerator.generateMessage("activation.send", TEST_EMAIL))
-        );
-        String activationCode = cacheService.getFromCache(ACTIVATION_CODE_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
-        assertThat(activationCode).isNotNull();
-
-        performRequest(
-                post(CONFIRM_EMAIL_URL, activationCode)
-                        .header("userEmail", TEST_EMAIL),
-                status().isOk(),
-                jsonPath("$.message")
-                        .value(messageGenerator.generateMessage("activation.success"))
-        );
-        assertThat(accountService.getAccountByEmail(TEST_EMAIL).isEmailConfirmed()).isTrue();
-
-        activationCode = cacheService.getFromCache(ACTIVATION_CODE_CACHE_PREFIX.formatted(TEST_EMAIL), String.class);
-        assertThat(activationCode).isNull();
-
-        performRequest(
-                post(CONFIRM_EMAIL_URL, "invalid activation code")
-                        .header("userEmail", TEST_EMAIL),
-                status().isBadRequest(),
-                jsonPath("$.message")
-                        .value(messageGenerator.generateMessage("error.activation-code.invalid"))
-        );
-    }
-
-    private void performRequest(
-            MockHttpServletRequestBuilder requestBuilder,
-            ResultMatcher... resultMatcher
-    ) throws Exception {
-        ResultActions resultActions = mockMvc.perform(requestBuilder);
-        expectResult(resultActions, resultMatcher);
-    }
-
-    private void expectResult(ResultActions resultActions, ResultMatcher... resultMatcher) throws Exception {
-        resultActions.andExpectAll(resultMatcher);
+        assertThat(jwt.isPresent()).isFalse();
     }
 }

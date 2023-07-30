@@ -26,7 +26,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request.anyRequest().permitAll())
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .logout(config -> config.logoutUrl("/api/v1/auth/logout").addLogoutHandler(logoutHandler))
+                .logout(config -> config
+                        .logoutUrl("/api/v1/logout")
+                        .addLogoutHandler(logoutHandler)
+                        .logoutSuccessHandler((request, response, authentication) -> request.logout())
+                        .clearAuthentication(true)
+                        .invalidateHttpSession(true)
+                )
                 .build();
     }
 }

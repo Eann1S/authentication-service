@@ -15,12 +15,12 @@ public interface AccountMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", expression = "java(passwordEncoder.encode(request.password()))")
     @Mapping(target = "role", expression = "java(role)")
-    @Mapping(target = "isEmailConfirmed", expression = "java(isEmailConfirmed)")
-    @Mapping(target = "isAccountNonExpired", expression = "java(true)")
-    @Mapping(target = "isAccountNonLocked", expression = "java(true)")
-    @Mapping(target = "isCredentialsNonExpired", expression = "java(true)")
-    @Mapping(target = "isEnabled", expression = "java(true)")
-    Account toEntity(EmailRegisterRequest request, @Context PasswordEncoder passwordEncoder, @Context Role role, @Context boolean isEmailConfirmed);
+    @Mapping(target = "emailConfirmed", expression = "java(emailConfirmed)")
+    @Mapping(target = "accountNonExpired", expression = "java(true)")
+    @Mapping(target = "accountNonLocked", expression = "java(true)")
+    @Mapping(target = "credentialsNonExpired", expression = "java(true)")
+    @Mapping(target = "enabled", expression = "java(true)")
+    Account toEntity(EmailRegisterRequest request, @Context PasswordEncoder passwordEncoder, @Context Role role, @Context boolean emailConfirmed);
 
     Account updateAccount(String email, @MappingTarget Account accountToUpdate);
 }

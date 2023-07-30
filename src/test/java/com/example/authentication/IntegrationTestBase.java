@@ -1,12 +1,16 @@
 package com.example.authentication;
 
 import com.example.authentication.dto.request.EmailRegisterRequest;
+import com.example.authentication.service.AuthenticationService;
+import com.example.authentication.service.EmailService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestComponent;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -16,6 +20,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -26,7 +34,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 
 import static com.example.authentication.constant.GlobalConstants.*;
 import static org.apache.commons.codec.CharEncoding.UTF_8;
@@ -52,6 +59,11 @@ public class IntegrationTestBase {
             .waitingFor(Wait.forHttp("/authentication-service/test").forStatusCode(200));
     @Container
     private static final KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.2"));
+
+    @Autowired
+    private AuthenticationService authenticationService;
+    @MockBean
+    protected EmailService emailService;
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
@@ -93,12 +105,25 @@ public class IntegrationTestBase {
         }
     }
 
-    protected void registerTestAccount(EmailRegisterRequest request, Consumer<EmailRegisterRequest> registerOperation) {
-        registerOperation.accept(request);
+    protected void registerTestAccount(EmailRegisterRequest request) {
+        authenticationService.registerWithEmail(request);
     }
 
-    protected void registerTestAccountWithDefaults(Consumer<EmailRegisterRequest> registerOperation) {
-        registerOperation.accept(new EmailRegisterRequest(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD));
+    protected void registerTestAccountWithDefaults() {
+        authenticationService.registerWithEmail(new EmailRegisterRequest(TEST_USERNAME, TEST_EMAIL, TEST_PASSWORD));
+    }
+
+    protected void performRequest(
+            MockMvc mockMvc,
+            MockHttpServletRequestBuilder requestBuilder,
+            ResultMatcher... resultMatcher
+    ) throws Exception {
+        ResultActions resultActions = mockMvc.perform(requestBuilder);
+        expectResult(resultActions, resultMatcher);
+    }
+
+    protected void expectResult(ResultActions resultActions, ResultMatcher... resultMatcher) throws Exception {
+        resultActions.andExpectAll(resultMatcher);
     }
 }
 

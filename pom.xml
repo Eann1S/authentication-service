@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>authentication-service</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>authentication-service</name>
@@ -224,7 +224,7 @@
                         <image>eclipse-temurin:17.0.6_10-jre-alpine</image>
                     </from>
                     <to>
-                        <image>registry.hub.docker.com/eann1s/${project.artifactId}:${project.version}</image>
+                        <image>eann1s/${project.artifactId}:${project.version}</image>
                         <tags>
                             <tag>latest</tag>
                         </tags>

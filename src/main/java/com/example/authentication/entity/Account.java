@@ -29,11 +29,11 @@ public class Account implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     private Role role;
     @Setter
-    private boolean isEmailConfirmed;
-    private boolean isAccountNonExpired;
-    private boolean isAccountNonLocked;
-    private boolean isCredentialsNonExpired;
-    private boolean isEnabled;
+    private boolean emailConfirmed;
+    private boolean accountNonExpired;
+    private boolean accountNonLocked;
+    private boolean credentialsNonExpired;
+    private boolean enabled;
 
     @Override
     public String getUsername() {

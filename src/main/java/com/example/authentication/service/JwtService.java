@@ -1,10 +1,12 @@
 package com.example.authentication.service;
 
-import com.example.authentication.exception.EmptyAuthenticationHeaderException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.example.authentication.exception.EmptyHeaderException;
+import com.example.authentication.exception.ExpiredAuthenticationTokenException;
+import com.example.authentication.exception.InvalidAuthenticationTokenException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.time.Duration;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.function.Function;
 
 import static com.example.authentication.constant.CachePrefix.JWT_CACHE_PREFIX;
@@ -29,10 +30,17 @@ public class JwtService {
     private String secretKey;
     private final MessageGenerator messageGenerator;
     private final CacheService cacheService;
+    private final AccountService accountService;
+
+    public String getUserEmailByJwt(String jwt) {
+        String email = extractEmailFromJwt(jwt);
+        validateJwtPresenceInCache(email);
+        return accountService.getAccountByEmail(email).getEmail();
+    }
 
     String generateJwt(UserDetails userDetails) {
         String jwt = Jwts.builder()
-                .setClaims(new HashMap<>())
+                .setClaims(Jwts.claims())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 3600 * 24))
@@ -48,11 +56,6 @@ public class JwtService {
         cacheService.deleteFromCache(JWT_CACHE_PREFIX.formatted(email));
     }
 
-    boolean isJwtValid(String jwt, UserDetails userDetails) {
-        String email = extractEmailFromJwt(jwt);
-        return email.equals(userDetails.getUsername()) && !isJwtExpired(jwt);
-    }
-
     String extractEmailFromJwt(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
     }
@@ -60,13 +63,15 @@ public class JwtService {
     String getJwtFromRequest(HttpServletRequest httpRequest) {
         String header = httpRequest.getHeader(AUTHORIZATION);
         if (StringUtils.isBlank(header) || !header.startsWith("Bearer ")) {
-            throw new EmptyAuthenticationHeaderException(messageGenerator.generateMessage("error.header.is_empty", AUTHORIZATION));
+            throw new EmptyHeaderException(messageGenerator.generateMessage("error.header.is_empty", AUTHORIZATION));
         }
         return header.split(" ")[1].trim();
     }
 
-    private boolean isJwtExpired(String jwt) {
-        return extractClaim(jwt, Claims::getExpiration).before(new Date());
+    private void validateJwtPresenceInCache(String email) {
+        if (cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(email), String.class).isEmpty()) {
+            throw new InvalidAuthenticationTokenException(messageGenerator.generateMessage("error.auth-token.invalid"));
+        }
     }
 
     private <T> T extractClaim(String jwt, Function<Claims, T> claimsResolver) {
@@ -75,11 +80,19 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String jwt) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSignInKey(secretKey))
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody();
+        Claims body;
+        try {
+            body = Jwts.parserBuilder()
+                    .setSigningKey(getSignInKey(secretKey))
+                    .build()
+                    .parseClaimsJws(jwt)
+                    .getBody();
+        } catch (SignatureException | MalformedJwtException e) {
+            throw new InvalidAuthenticationTokenException(messageGenerator.generateMessage("error.auth-token.invalid"), e);
+        } catch (ExpiredJwtException e) {
+            throw new ExpiredAuthenticationTokenException(messageGenerator.generateMessage("error.auth-token.expired"), e);
+        }
+        return body;
     }
 
     private Key getSignInKey(String secretKey) {

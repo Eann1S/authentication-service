@@ -1,6 +1,8 @@
-package com.example.authentication.exception;
+package com.example.authentication.exception.handler;
 
+import com.example.authentication.controller.AuthenticationController;
 import com.example.authentication.dto.response.ErrorResponse;
+import com.example.authentication.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackageClasses = AuthenticationController.class)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -34,10 +36,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             BadCredentialsException.class,
-            EmptyAuthenticationHeaderException.class
+            InvalidAuthenticationTokenException.class,
+            ExpiredAuthenticationTokenException.class
     })
     public ResponseEntity<ErrorResponse> handleForbiddenException(Exception e) {
         return generateErrorResponse(e, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({
+            EmptyHeaderException.class,
+    })
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(Exception e) {
+        return generateErrorResponse(e, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler({
