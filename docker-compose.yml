@@ -38,6 +38,8 @@ services:
     hostname: authentication-service-cache
     restart: unless-stopped
     pull_policy: missing
+    ports:
+      - 6379:6379
 
   zookeeper:
     container_name: zookeeper
@@ -61,6 +63,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    ports:
+      - 9092:9092
     depends_on:
       - zookeeper
 

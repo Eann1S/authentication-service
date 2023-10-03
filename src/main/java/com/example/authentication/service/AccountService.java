@@ -1,65 +1,67 @@
 package com.example.authentication.service;
 
-import com.example.authentication.dto.request.EmailRegisterRequest;
+import com.example.authentication.dto.mq_dto.UpdateDto;
+import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.Role;
+import com.example.authentication.exception.EntityNotFoundException;
 import com.example.authentication.mapper.AccountMapper;
 import com.example.authentication.repository.AccountRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-@Service
+import java.util.function.Supplier;
+
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final MessageGenerator messageGenerator;
     private final AccountMapper accountMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AccountConfirmationStrategy accountConfirmationStrategy;
 
-    public Account getAccountByEmail(String email) {
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageGenerator.generateMessage("error.entity.not_found", email)
-                ));
+    public void confirmAccount(Account account) {
+        accountConfirmationStrategy.confirmAccount(account);
     }
 
-    public Account getAccountById(Long id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageGenerator.generateMessage("error.entity.not_found", id)
-                ));
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    Account createAccountFromRegisterRequest(EmailRegisterRequest request, Role role, boolean isEmailConfirmed) {
-        Account account = accountMapper.toEntity(request, passwordEncoder, role, isEmailConfirmed);
-        return accountRepository.saveAndFlush(account);
-    }
-
-    void deleteAccountByEmail(String email) {
-        accountRepository.findByEmail(email)
-                .ifPresentOrElse(accountRepository::delete, () -> {
-                    throw new EntityNotFoundException(
-                            messageGenerator.generateMessage("error.entity.not_found", email)
-                    );
-                });
-    }
-
-    public boolean isAccountExistsByEmail(String email) {
+    public boolean accountExistsWithEmail(String email) {
         return accountRepository.findByEmail(email).isPresent();
     }
 
-    void confirmAccountEmail(String email) {
-        accountRepository.findByEmail(email)
-                .map(account -> {
-                    account.setEmailConfirmed(true);
-                    return accountRepository.saveAndFlush(account);
-                })
-                .orElseThrow(() -> new EntityNotFoundException(
-                        messageGenerator.generateMessage("error.entity.not_found", email)
-                ));
+    public Account createAccountFrom(RegisterRequest registerRequest, Role role) {
+        Account account = accountMapper.mapRegisterRequestToAccount(registerRequest, role, false);
+        encodeAndSetPasswordTo(account, registerRequest.password());
+        Account savedAccount = accountRepository.saveAndFlush(account);
+        log.info("account {} was created", account.getId());
+        return savedAccount;
+    }
+
+    public void updateAccountFrom(UpdateDto updateDto) {
+        Account account = findAccountByIdInDatabase(updateDto.id());
+        Account updatedAccount = accountMapper.updateAccountFieldsFrom(updateDto, account);
+        accountRepository.saveAndFlush(updatedAccount);
+        log.info("account {} was updated", account.getId());
+    }
+
+    public Account findAccountByIdInDatabase(Long accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(supplyExceptionIfAccountDoesNotExist(accountId));
+    }
+
+    public Account findAccountByEmailInDatabase(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(supplyExceptionIfAccountDoesNotExist(email));
+    }
+
+    private void encodeAndSetPasswordTo(Account account, String password) {
+        String encodedPassword = passwordEncoder.encode(password);
+        account.setPassword(encodedPassword);
+    }
+
+    private Supplier<? extends RuntimeException> supplyExceptionIfAccountDoesNotExist(Object accountProperty) {
+        return () -> new EntityNotFoundException(accountProperty);
     }
 }

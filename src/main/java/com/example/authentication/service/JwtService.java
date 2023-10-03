@@ -1,102 +1,94 @@
 package com.example.authentication.service;
 
-import com.example.authentication.exception.EmptyHeaderException;
+import com.example.authentication.entity.Account;
 import com.example.authentication.exception.ExpiredAuthenticationTokenException;
 import com.example.authentication.exception.InvalidAuthenticationTokenException;
+import com.example.authentication.service.caching.CachingService;
+import com.example.authentication.service.strategy.cache_key_strategy.CacheKeyFormattingStrategy;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.time.Duration;
 import java.util.Date;
-import java.util.function.Function;
 
-import static com.example.authentication.constant.CachePrefix.JWT_CACHE_PREFIX;
-import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
-
-@Service
 @RequiredArgsConstructor
+@Slf4j
 public class JwtService {
 
-    @Value("${secret.key}")
-    private String secretKey;
-    private final MessageGenerator messageGenerator;
-    private final CacheService cacheService;
+    private static final Duration JWT_EXPIRATION_DURATION =  Duration.ofDays(1);
     private final AccountService accountService;
+    private final JwtBuilder jwtBuilder;
+    private final JwtParser jwtParser;
+    private final CachingService cachingService;
+    private final CacheKeyFormattingStrategy cacheKeyFormattingStrategy;
 
-    public String getUserEmailByJwt(String jwt) {
-        String email = extractEmailFromJwt(jwt);
-        validateJwtPresenceInCache(email);
-        return accountService.getAccountByEmail(email).getEmail();
-    }
-
-    String generateJwt(UserDetails userDetails) {
-        String jwt = Jwts.builder()
-                .setClaims(Jwts.claims())
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 3600 * 24))
-                .signWith(getSignInKey(secretKey))
-                .compact();
-
-        String email = userDetails.getUsername();
-        cacheService.storeInCache(JWT_CACHE_PREFIX.formatted(email), jwt, Duration.ofDays(1));
+    public String createJwtFor(Account account) {
+        String jwt = generateJwt(account);
+        storeJwtOfAccountInCache(account, jwt);
+        log.info("jwt for account {} was created", account.getId());
         return jwt;
     }
 
-    void invalidateJwtByEmail(String email) {
-        cacheService.deleteFromCache(JWT_CACHE_PREFIX.formatted(email));
+    public void invalidateJwtOf(Account account) {
+        deleteJwtOfAccountFromCache(account);
+        log.info("jwt for account {} was invalidated", account.getId());
     }
 
-    String extractEmailFromJwt(String jwt) {
-        return extractClaim(jwt, Claims::getSubject);
+    public Account extractAccountFrom(String jwt) {
+        String email = extractSubjectFrom(jwt);
+        return accountService.findAccountByEmailInDatabase(email);
     }
 
-    String getJwtFromRequest(HttpServletRequest httpRequest) {
-        String header = httpRequest.getHeader(AUTHORIZATION);
-        if (StringUtils.isBlank(header) || !header.startsWith("Bearer ")) {
-            throw new EmptyHeaderException(messageGenerator.generateMessage("error.header.is_empty", AUTHORIZATION));
-        }
-        return header.split(" ")[1].trim();
+    public boolean accountAuthorized(Account account, String jwt) {
+        String jwtFromCache = getJwtOfAccountFromCache(account);
+        return StringUtils.equals(jwt, jwtFromCache);
     }
 
-    private void validateJwtPresenceInCache(String email) {
-        if (cacheService.getFromCache(JWT_CACHE_PREFIX.formatted(email), String.class).isEmpty()) {
-            throw new InvalidAuthenticationTokenException(messageGenerator.generateMessage("error.auth-token.invalid"));
-        }
+    private String extractSubjectFrom(String jwt) {
+        Claims claims = extractClaimsFrom(jwt);
+        return claims.getSubject();
     }
 
-    private <T> T extractClaim(String jwt, Function<Claims, T> claimsResolver) {
-        Claims claims = extractAllClaims(jwt);
-        return claimsResolver.apply(claims);
+    private Claims extractClaimsFrom(String jwt) {
+        Jws<Claims> parsedJwt = parse(jwt);
+        return parsedJwt.getBody();
     }
 
-    private Claims extractAllClaims(String jwt) {
-        Claims body;
+    private Jws<Claims> parse(String jwt) {
         try {
-            body = Jwts.parserBuilder()
-                    .setSigningKey(getSignInKey(secretKey))
-                    .build()
-                    .parseClaimsJws(jwt)
-                    .getBody();
-        } catch (SignatureException | MalformedJwtException e) {
-            throw new InvalidAuthenticationTokenException(messageGenerator.generateMessage("error.auth-token.invalid"), e);
+            return jwtParser.parseClaimsJws(jwt);
         } catch (ExpiredJwtException e) {
-            throw new ExpiredAuthenticationTokenException(messageGenerator.generateMessage("error.auth-token.expired"), e);
+            throw new ExpiredAuthenticationTokenException(e);
+        } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+            throw new InvalidAuthenticationTokenException(e);
         }
-        return body;
     }
 
-    private Key getSignInKey(String secretKey) {
-        byte[] bytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(bytes);
+    private String generateJwt(Account account) {
+        long currentTimeInMillis = System.currentTimeMillis();
+        return jwtBuilder
+                .setSubject(account.getEmail())
+                .setIssuedAt(new Date(currentTimeInMillis))
+                .setExpiration(new Date(currentTimeInMillis + JWT_EXPIRATION_DURATION.toMillis()))
+                .compact();
+    }
+
+    private void storeJwtOfAccountInCache(Account account, String jwt) {
+        String cacheKey = cacheKeyFormattingStrategy.formatCacheKey(account);
+        cachingService.storeInCache(cacheKey, jwt, JWT_EXPIRATION_DURATION);
+    }
+
+    private void deleteJwtOfAccountFromCache(Account account) {
+        String cacheKey = cacheKeyFormattingStrategy.formatCacheKey(account);
+        cachingService.deleteFromCache(cacheKey);
+    }
+
+    private String getJwtOfAccountFromCache(Account account) {
+        String cacheKey = cacheKeyFormattingStrategy.formatCacheKey(account);
+        return cachingService.getFromCache(cacheKey, String.class)
+                .orElseThrow(ExpiredAuthenticationTokenException::new);
     }
 }

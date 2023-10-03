@@ -9,9 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Entity
-@Getter
-@ToString
-@EqualsAndHashCode
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,7 +26,6 @@ public class Account implements UserDetails {
     private String password;
     @Enumerated(value = EnumType.STRING)
     private Role role;
-    @Setter
     private boolean emailConfirmed;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
