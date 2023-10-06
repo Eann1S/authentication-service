@@ -14,7 +14,10 @@ public interface ConfigServerStarter {
     @SuppressWarnings("resource")
     GenericContainer<?> configServer = new GenericContainer<>(DockerImageName.parse("eann1s/cloud-config-server:latest"))
             .withExposedPorts(8888)
-            .waitingFor(Wait.forHttp("/authentication-integration_tests.service/test").forStatusCode(200));
+            .withFileSystemBind("C://Users/123/config-repo", "/config-repo")
+            .withEnv("SPRING_PROFILES_ACTIVE", "native")
+            .withEnv("CONFIG_LOCATION", "file:///config-repo/{application}")
+            .waitingFor(Wait.forHttp("/authentication-service/test").forStatusCode(200));
 
     @BeforeAll
     static void setEnvironmentVariables() {
