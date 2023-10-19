@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import test_util.TestAccountUtil;
+import test_util.IntegrationTestAccountUtil;
 import test_util.starter.AllServicesStarter;
 
 import static com.example.authentication.message.ErrorMessage.INVALID_AUTH_TOKEN;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static test_util.TestControllerUtil.getContentWithExpectedStatus;
 import static test_util.constant.UrlConstants.ID_OF_AUTHORIZED_ACCOUNT_URL;
 
-@SpringBootTest(classes = {AuthenticationApplication.class, TestAccountUtil.class})
+@SpringBootTest(classes = {AuthenticationApplication.class, IntegrationTestAccountUtil.class})
 @ActiveProfiles("test")
 @ExtendWith(InstancioExtension.class)
 @AutoConfigureMockMvc
@@ -36,12 +36,12 @@ public class InternalControllerIntegrationTests implements AllServicesStarter {
     @Autowired
     private JwtService jwtService;
     @Autowired
-    private TestAccountUtil testAccountUtil;
+    private IntegrationTestAccountUtil integrationTestAccountUtil;
 
     @ParameterizedTest
     @InstancioSource
     void shouldReturnIdOfAuthorizedAccount_whenAccountExists(Account account) throws Exception {
-        account = testAccountUtil.saveAccountToDatabase(account);
+        account = integrationTestAccountUtil.saveAccountToDatabase(account);
         String jwt = jwtService.createJwtFor(account);
 
         String response = requestIdOfAuthorizedAccountAndExpectStatus(jwt, OK);

@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import test_util.TestAccountUtil;
+import test_util.IntegrationTestAccountUtil;
 import test_util.starter.AllServicesStarter;
 
 import static com.example.authentication.message.ErrorMessage.INVALID_CONFIRMATION_CODE;
@@ -32,7 +32,7 @@ import static test_util.TestControllerUtil.getContentWithExpectedStatus;
 import static test_util.constant.UrlConstants.CONFIRM_EMAIL_URL;
 import static test_util.constant.UrlConstants.SEND_EMAIL_CONFIRMATION_CODE_URL;
 
-@SpringBootTest(classes = {AuthenticationApplication.class, TestAccountUtil.class})
+@SpringBootTest(classes = {AuthenticationApplication.class, IntegrationTestAccountUtil.class})
 @ActiveProfiles("test")
 @ExtendWith(InstancioExtension.class)
 @AutoConfigureMockMvc
@@ -41,7 +41,7 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private TestAccountUtil testAccountUtil;
+    private IntegrationTestAccountUtil integrationTestAccountUtil;
     @Autowired
     @SpyBean
     private ConfirmationCodeService confirmationCodeService;
@@ -49,7 +49,7 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     @ParameterizedTest
     @InstancioSource
     void shouldSendConfirmationCodeByEmail_whenAccountExists(Account account) throws Exception {
-        account = testAccountUtil.saveAccountToDatabase(account);
+        account = integrationTestAccountUtil.saveAccountToDatabase(account);
         doNothing().when(confirmationCodeService).sendConfirmationCodeFor(eq(account), anyString());
 
         String jsonResponse = sendConfirmationCodeAndExpectStatus(account.getId(), OK);
@@ -60,7 +60,7 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     @ParameterizedTest
     @InstancioSource
     void shouldConfirmEmail_whenConfirmationCodeIsValid(Account account) throws Exception {
-        account = testAccountUtil.saveAccountToDatabase(account);
+        account = integrationTestAccountUtil.saveAccountToDatabase(account);
         String confirmationCode = confirmationCodeService.createConfirmationCodeFor(account);
 
         String jsonResponse = confirmEmailAndExpectStatus(account.getId(), confirmationCode, OK);
@@ -71,7 +71,7 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     @ParameterizedTest
     @InstancioSource
     void shouldReturnErrorResponse_whenConfirmationCodeIsInvalid(Account account, String confirmationCode) throws Exception {
-        account = testAccountUtil.saveAccountToDatabase(account);
+        account = integrationTestAccountUtil.saveAccountToDatabase(account);
 
         String jsonResponse = confirmEmailAndExpectStatus(account.getId(), confirmationCode, BAD_REQUEST);
 

@@ -4,15 +4,13 @@ import com.example.authentication.dto.mq_dto.UpdateDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.Role;
-import com.example.authentication.exception.EntityNotFoundException;
+import com.example.authentication.exception.AccountNotFoundException;
 import com.example.authentication.mapper.AccountMapper;
 import com.example.authentication.repository.AccountRepository;
 import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -48,20 +46,16 @@ public class AccountService {
 
     public Account findAccountByIdInDatabase(Long accountId) {
         return accountRepository.findById(accountId)
-                .orElseThrow(supplyExceptionIfAccountDoesNotExist(accountId));
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 
     public Account findAccountByEmailInDatabase(String email) {
         return accountRepository.findByEmail(email)
-                .orElseThrow(supplyExceptionIfAccountDoesNotExist(email));
+                .orElseThrow(() -> new AccountNotFoundException(email));
     }
 
     private void encodeAndSetPasswordTo(Account account, String password) {
         String encodedPassword = passwordEncoder.encode(password);
         account.setPassword(encodedPassword);
-    }
-
-    private Supplier<? extends RuntimeException> supplyExceptionIfAccountDoesNotExist(Object accountProperty) {
-        return () -> new EntityNotFoundException(accountProperty);
     }
 }

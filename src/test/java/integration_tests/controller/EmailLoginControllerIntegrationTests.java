@@ -16,7 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import test_util.TestAccountUtil;
+import test_util.IntegrationTestAccountUtil;
 import test_util.starter.AllServicesStarter;
 
 import static com.example.authentication.json.JsonConverter.fromJson;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static test_util.TestControllerUtil.getContentWithExpectedStatus;
 import static test_util.constant.UrlConstants.EMAIL_LOGIN_URL;
 
-@SpringBootTest(classes = {AuthenticationApplication.class, TestAccountUtil.class})
+@SpringBootTest(classes = {AuthenticationApplication.class, IntegrationTestAccountUtil.class})
 @ActiveProfiles("test")
 @ExtendWith(InstancioExtension.class)
 @AutoConfigureMockMvc
@@ -38,12 +38,12 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private TestAccountUtil testAccountUtil;
+    private IntegrationTestAccountUtil integrationTestAccountUtil;
 
     @ParameterizedTest
     @InstancioSource
     void shouldLoginIntoAccount_whenRequestIsValid(Account account) throws Exception {
-        testAccountUtil.registerAccount(account);
+        integrationTestAccountUtil.registerAccount(account);
         EmailLoginRequest request = EmailLoginRequest.of(account.getEmail(), account.getPassword());
 
         String jsonResponse = loginAndExpectStatus(request, OK);
@@ -65,7 +65,7 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
     @ParameterizedTest
     @InstancioSource
     void shouldNotLoginIntoAccount_whenEmailAndPasswordAreInvalid(Account account, EmailLoginRequest request) throws Exception {
-        testAccountUtil.saveAccountToDatabase(account);
+        integrationTestAccountUtil.saveAccountToDatabase(account);
 
         String jsonResponse = loginAndExpectStatus(request, FORBIDDEN);
 

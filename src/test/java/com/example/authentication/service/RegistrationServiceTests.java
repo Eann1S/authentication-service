@@ -3,6 +3,7 @@ package com.example.authentication.service;
 import com.example.authentication.dto.mq_dto.RegistrationDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
+import com.example.authentication.exception.AccountAlreadyExistsException;
 import com.example.authentication.mapper.AccountMapper;
 import com.example.authentication.service.messaging.UserMessagingService;
 import org.instancio.junit.InstancioExtension;
@@ -13,7 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.example.authentication.message.ErrorMessage.ENTITY_ALREADY_EXISTS;
+import static com.example.authentication.message.ErrorMessage.ACCOUNT_ALREADY_EXISTS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,6 +59,7 @@ class RegistrationServiceTests {
                 .thenReturn(true);
 
         assertThatThrownBy(() -> registrationService.register(registerRequest))
-                .hasMessage(ENTITY_ALREADY_EXISTS.formatWith(registerRequest.email()));
+                .isInstanceOf(AccountAlreadyExistsException.class)
+                .hasMessage(ACCOUNT_ALREADY_EXISTS.formatWith(registerRequest.email()));
     }
 }

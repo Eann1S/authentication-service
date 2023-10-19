@@ -10,7 +10,6 @@ import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ class AccountMapperTests {
 
     @BeforeEach
     void setUp() {
-        accountMapper = Mappers.getMapper(AccountMapper.class);
+        accountMapper = new AccountMapperImpl();
     }
 
     @ParameterizedTest

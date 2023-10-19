@@ -27,8 +27,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorsMap, BAD_REQUEST);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorDto> handleNotFoundException(EntityNotFoundException exception) {
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleNotFoundException(AccountNotFoundException exception) {
         return createErrorResponse(exception, NOT_FOUND);
     }
 
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            EntityAlreadyExistsException.class,
+            AccountAlreadyExistsException.class,
             InvalidConfirmationCodeException.class
     })
     public ResponseEntity<ErrorDto> handleBadRequestException(Exception exception) {

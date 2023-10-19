@@ -4,6 +4,7 @@ import com.example.authentication.dto.mq_dto.UpdateDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.Role;
+import com.example.authentication.exception.AccountNotFoundException;
 import com.example.authentication.mapper.AccountMapper;
 import com.example.authentication.repository.AccountRepository;
 import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
@@ -19,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.authentication.message.ErrorMessage.ENTITY_NOT_FOUND;
+import static com.example.authentication.message.ErrorMessage.ACCOUNT_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -126,14 +127,16 @@ class AccountServiceTests {
         @InstancioSource
         void shouldThrowException_whenAccountWithGivenEmailDoesNotExist(String email) {
             assertThatThrownBy(() -> accountService.findAccountByEmailInDatabase(email))
-                    .hasMessage(ENTITY_NOT_FOUND.formatWith(email));
+                    .isInstanceOf(AccountNotFoundException.class)
+                    .hasMessage(ACCOUNT_NOT_FOUND.formatWith(email));
         }
 
         @ParameterizedTest
         @InstancioSource
         void shouldThrowException_whenAccountWithGivenIdDoesNotExist(Long id) {
             assertThatThrownBy(() -> accountService.findAccountByIdInDatabase(id))
-                    .hasMessage(ENTITY_NOT_FOUND.formatWith(id));
+                    .isInstanceOf(AccountNotFoundException.class)
+                    .hasMessage(ACCOUNT_NOT_FOUND.formatWith(id));
         }
 
     }

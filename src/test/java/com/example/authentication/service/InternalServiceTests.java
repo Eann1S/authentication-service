@@ -31,7 +31,7 @@ class InternalServiceTests {
     void shouldReturnIdOfAuthorizedAccount_whenAccountAuthorized(Account account, String jwt) {
         when(jwtService.extractAccountFrom(jwt))
                 .thenReturn(account);
-        when(jwtService.accountAuthorized(account, jwt))
+        when(jwtService.isAccountAuthorized(account, jwt))
                 .thenReturn(true);
 
         Long accountId = internalService.getIdOfAuthorizedAccount(jwt);
@@ -44,7 +44,7 @@ class InternalServiceTests {
     void shouldThrowException_whenAccountIsNotAuthorized(Account account, String jwt) {
         when(jwtService.extractAccountFrom(jwt))
                 .thenReturn(account);
-        when(jwtService.accountAuthorized(account, jwt))
+        when(jwtService.isAccountAuthorized(account, jwt))
                 .thenReturn(false);
 
         assertThatThrownBy(() -> internalService.getIdOfAuthorizedAccount(jwt))

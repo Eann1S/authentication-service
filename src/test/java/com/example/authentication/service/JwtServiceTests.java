@@ -1,6 +1,7 @@
 package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
+import com.example.authentication.exception.ExpiredAuthenticationTokenException;
 import com.example.authentication.service.caching.CachingService;
 import com.example.authentication.service.strategy.cache_key_strategy.CacheKeyFormattingStrategy;
 import io.jsonwebtoken.*;
@@ -63,7 +64,7 @@ class JwtServiceTests {
 
         @ParameterizedTest
         @InstancioSource
-        void shouldInvalidateJwtForAccount(Account account, String cacheKey) {
+        void shouldInvalidateJwtOfAccount(Account account, String cacheKey) {
             when(cacheKeyFormattingStrategy.formatCacheKey(account))
                     .thenReturn(cacheKey);
 
@@ -93,9 +94,9 @@ class JwtServiceTests {
             when(cachingService.getFromCache(cacheKey, String.class))
                     .thenReturn(Optional.of(jwt));
 
-            boolean doesAccountAuthorized = jwtService.accountAuthorized(account, jwt);
+            boolean isAccountAuthorized = jwtService.isAccountAuthorized(account, jwt);
 
-            assertThat(doesAccountAuthorized).isTrue();
+            assertThat(isAccountAuthorized).isTrue();
         }
     }
 
@@ -114,11 +115,12 @@ class JwtServiceTests {
 
         @ParameterizedTest
         @InstancioSource
-        void shouldThrowException_whenJwtIsExpired(String jwt) {
+        void shouldThrowException_whenJwtHasExpired(String jwt) {
             when(jwtParser.parseClaimsJws(jwt))
                     .thenThrow(ExpiredJwtException.class);
 
             assertThatThrownBy(() -> jwtService.extractAccountFrom(jwt))
+                    .isInstanceOf(ExpiredAuthenticationTokenException.class)
                     .hasMessage(EXPIRED_AUTH_TOKEN.getMessage());
         }
 
@@ -128,7 +130,8 @@ class JwtServiceTests {
             when(cacheKeyFormattingStrategy.formatCacheKey(account))
                     .thenReturn(cacheKey);
 
-            assertThatThrownBy(() -> jwtService.accountAuthorized(account, jwt))
+            assertThatThrownBy(() -> jwtService.isAccountAuthorized(account, jwt))
+                    .isInstanceOf(ExpiredAuthenticationTokenException.class)
                     .hasMessage(EXPIRED_AUTH_TOKEN.getMessage());
         }
 
@@ -140,9 +143,9 @@ class JwtServiceTests {
             when(cachingService.getFromCache(cacheKey, String.class))
                     .thenReturn(Optional.of(jwt));
 
-            boolean doesAccountAuthorized = jwtService.accountAuthorized(account, invalidJwt);
+            boolean isAccountAuthorized = jwtService.isAccountAuthorized(account, invalidJwt);
 
-            assertThat(doesAccountAuthorized).isFalse();
+            assertThat(isAccountAuthorized).isFalse();
         }
     }
 

@@ -62,7 +62,7 @@ class ConfirmationCodeServiceTests {
 
     @ParameterizedTest
     @InstancioSource
-    void shouldInvalidateConfirmationCodeForAccount(Account account, String cacheKey) {
+    void shouldInvalidateConfirmationCodeOfAccount(Account account, String cacheKey) {
         when(cacheKeyFormattingStrategy.formatCacheKey(account))
                 .thenReturn(cacheKey);
 

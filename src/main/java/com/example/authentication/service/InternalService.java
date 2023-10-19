@@ -13,7 +13,7 @@ public class InternalService {
 
     public Long getIdOfAuthorizedAccount(String jwt) {
         Account account = jwtService.extractAccountFrom(jwt);
-        if (!jwtService.accountAuthorized(account, jwt)) {
+        if (!jwtService.isAccountAuthorized(account, jwt)) {
             throw new InvalidAuthenticationTokenException();
         }
         return account.getId();

@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.TestComponent;
 
 @TestComponent
 @RequiredArgsConstructor
-public class TestAccountUtil {
+public class IntegrationTestAccountUtil {
 
     private final RegistrationService registrationService;
     private final AccountRepository accountRepository;

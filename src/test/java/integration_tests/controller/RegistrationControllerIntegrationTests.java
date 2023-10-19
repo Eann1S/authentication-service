@@ -19,7 +19,7 @@ import test_util.starter.AllServicesStarter;
 import java.util.Locale;
 
 import static com.example.authentication.json.JsonConverter.toJson;
-import static com.example.authentication.message.ErrorMessage.ENTITY_ALREADY_EXISTS;
+import static com.example.authentication.message.ErrorMessage.ACCOUNT_ALREADY_EXISTS;
 import static com.example.authentication.message.InfoMessage.ACCOUNT_CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -56,7 +56,7 @@ public class RegistrationControllerIntegrationTests implements AllServicesStarte
         registerAccountAndExpectStatus(request, OK);
         String failureJsonResponse = registerAccountAndExpectStatus(request, BAD_REQUEST);
 
-        assertThat(failureJsonResponse).contains(ENTITY_ALREADY_EXISTS.formatWith(TEST_EMAIL));
+        assertThat(failureJsonResponse).contains(ACCOUNT_ALREADY_EXISTS.formatWith(TEST_EMAIL));
     }
 
     @Test

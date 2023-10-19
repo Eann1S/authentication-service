@@ -42,7 +42,7 @@ public class JwtService {
         return accountService.findAccountByEmailInDatabase(email);
     }
 
-    public boolean accountAuthorized(Account account, String jwt) {
+    public boolean isAccountAuthorized(Account account, String jwt) {
         String jwtFromCache = getJwtOfAccountFromCache(account);
         return StringUtils.equals(jwt, jwtFromCache);
     }

@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import test_util.TestAccountUtil;
+import test_util.IntegrationTestAccountUtil;
 import test_util.starter.AllServicesStarter;
 
 import static com.example.authentication.message.InfoMessage.LOGGED_OUT;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static test_util.TestControllerUtil.getContentWithExpectedStatus;
 import static test_util.constant.UrlConstants.LOGOUT_URL;
 
-@SpringBootTest(classes = {AuthenticationApplication.class, TestAccountUtil.class})
+@SpringBootTest(classes = {AuthenticationApplication.class, IntegrationTestAccountUtil.class})
 @ActiveProfiles("test")
 @ExtendWith(InstancioExtension.class)
 @AutoConfigureMockMvc
@@ -33,12 +33,12 @@ public class LogoutControllerIntegrationTests implements AllServicesStarter {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private TestAccountUtil testAccountUtil;
+    private IntegrationTestAccountUtil integrationTestAccountUtil;
 
     @ParameterizedTest
     @InstancioSource
     void shouldLogoutFromAccount_whenAccountExists(Account account) throws Exception {
-        account = testAccountUtil.saveAccountToDatabase(account);
+        account = integrationTestAccountUtil.saveAccountToDatabase(account);
 
         String jsonResponse = logoutAndExpectStatus(account, OK);
 

@@ -4,8 +4,8 @@ import lombok.Getter;
 
 public enum ErrorMessage {
 
-    ENTITY_ALREADY_EXISTS("Entity with property %s already exists"),
-    ENTITY_NOT_FOUND("Entity with property %s does not exist"),
+    ACCOUNT_ALREADY_EXISTS("Account %s already exists"),
+    ACCOUNT_NOT_FOUND("Account %s does not exist"),
     EXPIRED_AUTH_TOKEN("Your authentication token has expired."),
     INVALID_AUTH_TOKEN("Your authentication token is invalid."),
     INVALID_CONFIRMATION_CODE("Your confirmation code is invalid."),
