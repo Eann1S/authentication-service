@@ -1,6 +1,6 @@
 package com.example.authentication.exception.exception_handler;
 
-import com.example.authentication.dto.response.ErrorDto;
+import com.example.authentication.dto.ErrorDto;
 import com.example.authentication.exception.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;

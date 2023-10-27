@@ -2,7 +2,7 @@ package integration_tests.controller;
 
 import com.example.authentication.AuthenticationApplication;
 import com.example.authentication.dto.request.EmailLoginRequest;
-import com.example.authentication.dto.response.JwtDto;
+import com.example.authentication.dto.JwtDto;
 import com.example.authentication.entity.Account;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;

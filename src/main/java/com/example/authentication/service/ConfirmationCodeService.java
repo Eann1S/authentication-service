@@ -5,7 +5,6 @@ import com.example.authentication.exception.InvalidConfirmationCodeException;
 import com.example.authentication.service.caching.CachingService;
 import com.example.authentication.service.strategy.cache_key_strategy.CacheKeyFormattingStrategy;
 import com.example.authentication.service.strategy.code_generation_strategy.ConfirmationCodeGenerationStrategy;
-import com.example.authentication.service.strategy.code_sending_strategy.ConfirmationCodeSendingStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -20,13 +19,8 @@ public class ConfirmationCodeService {
     private final CachingService cachingService;
     private final CacheKeyFormattingStrategy cacheKeyFormattingStrategy;
     private final ConfirmationCodeGenerationStrategy confirmationCodeGenerationStrategy;
-    private final ConfirmationCodeSendingStrategy confirmationCodeSendingStrategy;
 
-    public void sendConfirmationCodeFor(Account account, String confirmationCode) {
-        confirmationCodeSendingStrategy.sendConfirmationCode(account, confirmationCode);
-    }
-
-    public String createConfirmationCodeFor(Account account) {
+    public String generateConfirmationCodeFor(Account account) {
         String confirmationCode = confirmationCodeGenerationStrategy.generateConfirmationCode();
         storeConfirmationCodeOfAccountInCache(account, confirmationCode);
         log.info("confirmation code for account {} was created", account.getId());

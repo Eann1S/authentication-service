@@ -1,8 +1,9 @@
-package com.example.authentication.config.service.confirmation;
+package com.example.authentication.config.service;
 
-import com.example.authentication.service.confirmation.AccountConfirmationService;
+import com.example.authentication.service.AccountConfirmationService;
 import com.example.authentication.service.AccountService;
 import com.example.authentication.service.ConfirmationCodeService;
+import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -13,13 +14,16 @@ import org.springframework.context.annotation.Primary;
 @RequiredArgsConstructor
 public class AccountConfirmationServiceConfig {
 
+    private final AccountService accountService;
+
     @Bean
     @Primary
     @Qualifier("email")
     public AccountConfirmationService emailAccountConfirmationService(
-            @Qualifier("email") AccountService accountService,
-            @Qualifier("email") ConfirmationCodeService confirmationCodeService
+            @Qualifier("email") ConfirmationCodeService confirmationCodeService,
+            @Qualifier("email") AccountConfirmationStrategy accountConfirmationStrategy
     ) {
-        return new AccountConfirmationService(accountService, confirmationCodeService);
+        return new AccountConfirmationService(
+                accountService, confirmationCodeService, accountConfirmationStrategy);
     }
 }

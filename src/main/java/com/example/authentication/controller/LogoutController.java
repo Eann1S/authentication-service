@@ -1,6 +1,6 @@
 package com.example.authentication.controller;
 
-import com.example.authentication.dto.response.MessageDto;
+import com.example.authentication.dto.MessageDto;
 import com.example.authentication.service.LogoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

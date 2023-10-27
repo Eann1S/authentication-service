@@ -1,7 +1,7 @@
 package com.example.authentication.controller;
 
 import com.example.authentication.dto.request.EmailLoginRequest;
-import com.example.authentication.dto.response.JwtDto;
+import com.example.authentication.dto.JwtDto;
 import com.example.authentication.service.login.LoginService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

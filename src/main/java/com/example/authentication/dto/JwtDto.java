@@ -1,4 +1,4 @@
-package com.example.authentication.dto.response;
+package com.example.authentication.dto;
 
 public record JwtDto(
         String jwt

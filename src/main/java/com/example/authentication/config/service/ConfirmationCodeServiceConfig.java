@@ -1,10 +1,9 @@
 package com.example.authentication.config.service;
 
+import com.example.authentication.service.ConfirmationCodeService;
 import com.example.authentication.service.caching.CachingService;
 import com.example.authentication.service.strategy.cache_key_strategy.CacheKeyFormattingStrategy;
 import com.example.authentication.service.strategy.code_generation_strategy.ConfirmationCodeGenerationStrategy;
-import com.example.authentication.service.strategy.code_sending_strategy.ConfirmationCodeSendingStrategy;
-import com.example.authentication.service.ConfirmationCodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -22,10 +21,9 @@ public class ConfirmationCodeServiceConfig {
     @Qualifier("email")
     public ConfirmationCodeService emailConfirmationCodeService(
             @Qualifier("email_confirmation_code") CacheKeyFormattingStrategy cacheKeyFormattingStrategy,
-            @Qualifier("email") ConfirmationCodeGenerationStrategy confirmationCodeGenerationStrategy,
-            @Qualifier("email") ConfirmationCodeSendingStrategy confirmationCodeSendingStrategy
+            @Qualifier("email") ConfirmationCodeGenerationStrategy confirmationCodeGenerationStrategy
     ) {
         return new ConfirmationCodeService(
-                cachingService, cacheKeyFormattingStrategy, confirmationCodeGenerationStrategy, confirmationCodeSendingStrategy);
+                cachingService, cacheKeyFormattingStrategy, confirmationCodeGenerationStrategy);
     }
 }

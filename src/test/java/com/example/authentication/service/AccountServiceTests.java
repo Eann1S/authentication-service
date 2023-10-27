@@ -7,7 +7,6 @@ import com.example.authentication.entity.Role;
 import com.example.authentication.exception.AccountNotFoundException;
 import com.example.authentication.mapper.AccountMapper;
 import com.example.authentication.repository.AccountRepository;
-import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
 import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,16 +31,12 @@ class AccountServiceTests {
     @Mock
     private AccountRepository accountRepository;
     @Mock
-    private PasswordEncoder passwordEncoder;
-    @Mock
-    private AccountConfirmationStrategy accountConfirmationStrategy;
-    @Mock
     private AccountMapper accountMapper;
     private AccountService accountService;
 
     @BeforeEach
     void setUp() {
-        accountService = new AccountService(accountRepository, accountMapper, passwordEncoder, accountConfirmationStrategy);
+        accountService = new AccountService(accountRepository, accountMapper);
     }
 
     @Nested
@@ -50,19 +44,11 @@ class AccountServiceTests {
 
         @ParameterizedTest
         @InstancioSource
-        void shouldConfirmAccount(Account account) {
-            accountService.confirmAccount(account);
-
-            verify(accountConfirmationStrategy).confirmAccount(account);
-        }
-
-        @ParameterizedTest
-        @InstancioSource
         void shouldReturnTrue_whenAccountWithGivenEmailExists(Account account) {
             when(accountRepository.findByEmail(account.getEmail()))
                     .thenReturn(Optional.of(account));
 
-            boolean accountActuallyExists = accountService.accountExistsWithEmail(account.getEmail());
+            boolean accountActuallyExists = accountService.doesAccountExistsWithEmail(account.getEmail());
 
             assertThat(accountActuallyExists).isTrue();
         }
@@ -70,10 +56,8 @@ class AccountServiceTests {
         @ParameterizedTest
         @InstancioSource
         void shouldCreateAccountWithUnconfirmedEmailFromRegisterRequest(Account account, RegisterRequest registerRequest) {
-            when(accountMapper.mapRegisterRequestToAccount(eq(registerRequest), any(), anyBoolean()))
+            when(accountMapper.mapRegisterRequestToAccount(eq(registerRequest), any()))
                     .thenReturn(account);
-            when(passwordEncoder.encode(any()))
-                    .thenReturn(account.getPassword());
             when(accountRepository.saveAndFlush(account))
                     .then(returnsFirstArg());
 

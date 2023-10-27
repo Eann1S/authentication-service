@@ -1,7 +1,7 @@
 package com.example.authentication.controller;
 
 import com.example.authentication.dto.request.RegisterRequest;
-import com.example.authentication.dto.response.MessageDto;
+import com.example.authentication.dto.MessageDto;
 import com.example.authentication.service.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

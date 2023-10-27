@@ -2,6 +2,7 @@ package integration_tests.controller;
 
 import com.example.authentication.AuthenticationApplication;
 import com.example.authentication.entity.Account;
+import com.example.authentication.service.ConfirmationCodeSendingService;
 import com.example.authentication.service.ConfirmationCodeService;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
@@ -22,8 +23,7 @@ import static com.example.authentication.message.ErrorMessage.INVALID_CONFIRMATI
 import static com.example.authentication.message.InfoMessage.EMAIL_CONFIRMATION_CODE_SENT;
 import static com.example.authentication.message.InfoMessage.EMAIL_CONFIRMED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
@@ -43,14 +43,16 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     @Autowired
     private IntegrationTestAccountUtil integrationTestAccountUtil;
     @Autowired
-    @SpyBean
     private ConfirmationCodeService confirmationCodeService;
+    @SpyBean
+    private ConfirmationCodeSendingService confirmationCodeSendingService;
 
     @ParameterizedTest
     @InstancioSource
     void shouldSendConfirmationCodeByEmail_whenAccountExists(Account account) throws Exception {
+        doNothing()
+                .when(confirmationCodeSendingService).sendConfirmationCodeForAccountWithId(anyLong());
         account = integrationTestAccountUtil.saveAccountToDatabase(account);
-        doNothing().when(confirmationCodeService).sendConfirmationCodeFor(eq(account), anyString());
 
         String jsonResponse = sendConfirmationCodeAndExpectStatus(account.getId(), OK);
 
@@ -61,7 +63,7 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     @InstancioSource
     void shouldConfirmEmail_whenConfirmationCodeIsValid(Account account) throws Exception {
         account = integrationTestAccountUtil.saveAccountToDatabase(account);
-        String confirmationCode = confirmationCodeService.createConfirmationCodeFor(account);
+        String confirmationCode = confirmationCodeService.generateConfirmationCodeFor(account);
 
         String jsonResponse = confirmEmailAndExpectStatus(account.getId(), confirmationCode, OK);
 

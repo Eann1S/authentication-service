@@ -1,8 +1,7 @@
-package com.example.authentication.service.confirmation;
+package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
-import com.example.authentication.service.AccountService;
-import com.example.authentication.service.ConfirmationCodeService;
+import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,28 +23,17 @@ class AccountConfirmationServiceTests {
     private AccountService accountService;
     @Mock
     private ConfirmationCodeService confirmationCodeService;
+    @Mock
+    private AccountConfirmationStrategy accountConfirmationStrategy;
     private AccountConfirmationService accountConfirmationService;
 
     @BeforeEach
     void setUp() {
-        accountConfirmationService = new AccountConfirmationService(accountService, confirmationCodeService);
+        accountConfirmationService = new AccountConfirmationService(accountService, confirmationCodeService, accountConfirmationStrategy);
     }
 
     @Nested
     class SuccessCases {
-
-        @ParameterizedTest
-        @InstancioSource
-        void shouldSendGeneratedConfirmationCode(Account account, String confirmationCode) {
-            when(accountService.findAccountByIdInDatabase(account.getId()))
-                    .thenReturn(account);
-            when(confirmationCodeService.createConfirmationCodeFor(account))
-                    .thenReturn(confirmationCode);
-
-            accountConfirmationService.sendGeneratedConfirmationCodeForAccountWith(account.getId());
-
-            verify(confirmationCodeService).sendConfirmationCodeFor(account, confirmationCode);
-        }
 
         @ParameterizedTest
         @InstancioSource
@@ -55,10 +43,10 @@ class AccountConfirmationServiceTests {
             when(confirmationCodeService.isConfirmationCodeOfAccountValid(account, confirmationCode))
                     .thenReturn(true);
 
-            accountConfirmationService.confirmAccountWith(account.getId(), confirmationCode);
+            accountConfirmationService.confirmAccountWithId(account.getId(), confirmationCode);
 
             verify(confirmationCodeService).invalidateConfirmationCodeOf(account);
-            verify(accountService).confirmAccount(account);
+            verify(accountConfirmationStrategy).confirmAccount(account);
         }
     }
 
@@ -73,7 +61,7 @@ class AccountConfirmationServiceTests {
             when(confirmationCodeService.isConfirmationCodeOfAccountValid(account, confirmationCode))
                     .thenReturn(false);
 
-            assertThatThrownBy(() -> accountConfirmationService.confirmAccountWith(account.getId(), confirmationCode))
+            assertThatThrownBy(() -> accountConfirmationService.confirmAccountWithId(account.getId(), confirmationCode))
                     .hasMessage(INVALID_CONFIRMATION_CODE.getMessage());
         }
     }

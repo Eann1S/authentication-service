@@ -40,7 +40,7 @@ class RegistrationServiceTests {
     @ParameterizedTest
     @InstancioSource
     void shouldRegisterAccount(RegisterRequest registerRequest, Account account, RegistrationDto registrationDto) {
-        when(accountService.accountExistsWithEmail(registerRequest.email()))
+        when(accountService.doesAccountExistsWithEmail(registerRequest.email()))
                 .thenReturn(false);
         when(accountService.createAccountFrom(eq(registerRequest), any()))
                 .thenReturn(account);
@@ -55,7 +55,7 @@ class RegistrationServiceTests {
     @ParameterizedTest
     @InstancioSource
     void shouldThrowException_whenAccountAlreadyExists(RegisterRequest registerRequest) {
-        when(accountService.accountExistsWithEmail(registerRequest.email()))
+        when(accountService.doesAccountExistsWithEmail(registerRequest.email()))
                 .thenReturn(true);
 
         assertThatThrownBy(() -> registrationService.register(registerRequest))

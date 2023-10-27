@@ -26,7 +26,7 @@ public class RegistrationService {
     }
 
     private void throwExceptionIfAccountWithGivenEmailAlreadyExists(String email) {
-        if (accountService.accountExistsWithEmail(email)) {
+        if (accountService.doesAccountExistsWithEmail(email)) {
             throw new AccountAlreadyExistsException(email);
         }
     }

@@ -4,7 +4,6 @@ import com.example.authentication.entity.Account;
 import com.example.authentication.service.caching.CachingService;
 import com.example.authentication.service.strategy.cache_key_strategy.CacheKeyFormattingStrategy;
 import com.example.authentication.service.strategy.code_generation_strategy.ConfirmationCodeGenerationStrategy;
-import com.example.authentication.service.strategy.code_sending_strategy.ConfirmationCodeSendingStrategy;
 import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,22 +27,12 @@ class ConfirmationCodeServiceTests {
     private CacheKeyFormattingStrategy cacheKeyFormattingStrategy;
     @Mock
     private ConfirmationCodeGenerationStrategy confirmationCodeGenerationStrategy;
-    @Mock
-    private ConfirmationCodeSendingStrategy confirmationCodeSendingStrategy;
     private ConfirmationCodeService confirmationCodeService;
 
     @BeforeEach
     void setUp() {
         confirmationCodeService = new ConfirmationCodeService(
-                cachingService, cacheKeyFormattingStrategy, confirmationCodeGenerationStrategy, confirmationCodeSendingStrategy);
-    }
-
-    @ParameterizedTest
-    @InstancioSource
-    void shouldSendConfirmationCodeForAccount(Account account, String confirmationCode) {
-        confirmationCodeService.sendConfirmationCodeFor(account, confirmationCode);
-
-        verify(confirmationCodeSendingStrategy).sendConfirmationCode(account, confirmationCode);
+                cachingService, cacheKeyFormattingStrategy, confirmationCodeGenerationStrategy);
     }
 
     @ParameterizedTest
@@ -54,7 +43,7 @@ class ConfirmationCodeServiceTests {
         when(confirmationCodeGenerationStrategy.generateConfirmationCode())
                 .thenReturn(confirmationCode);
 
-        String actualConfirmationCode = confirmationCodeService.createConfirmationCodeFor(account);
+        String actualConfirmationCode = confirmationCodeService.generateConfirmationCodeFor(account);
 
         assertThat(actualConfirmationCode).isEqualTo(confirmationCode);
         verify(cachingService).storeInCache(eq(cacheKey), contains(confirmationCode), any());

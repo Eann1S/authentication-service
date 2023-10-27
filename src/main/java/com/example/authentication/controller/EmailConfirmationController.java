@@ -1,7 +1,8 @@
 package com.example.authentication.controller;
 
-import com.example.authentication.dto.response.MessageDto;
-import com.example.authentication.service.confirmation.AccountConfirmationService;
+import com.example.authentication.dto.MessageDto;
+import com.example.authentication.service.AccountConfirmationService;
+import com.example.authentication.service.ConfirmationCodeSendingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,12 @@ public class EmailConfirmationController {
 
     @Qualifier("email")
     private final AccountConfirmationService accountConfirmationService;
+    @Qualifier("email")
+    private final ConfirmationCodeSendingService confirmationCodeSendingService;
 
     @PostMapping("/send-code")
     public ResponseEntity<MessageDto> sendConfirmationCodeByEmail(@RequestHeader(name = "User-Id") Long id) {
-        accountConfirmationService.sendGeneratedConfirmationCodeForAccountWith(id);
+        confirmationCodeSendingService.sendConfirmationCodeForAccountWithId(id);
         return ResponseEntity.ok(
                 MessageDto.of(EMAIL_CONFIRMATION_CODE_SENT));
     }
@@ -30,7 +33,7 @@ public class EmailConfirmationController {
             @RequestHeader(name = "User-Id") Long id,
             @PathVariable String confirmationCode
     ) {
-        accountConfirmationService.confirmAccountWith(id, confirmationCode);
+        accountConfirmationService.confirmAccountWithId(id, confirmationCode);
         return ResponseEntity.ok(
                 MessageDto.of(EMAIL_CONFIRMED));
     }
