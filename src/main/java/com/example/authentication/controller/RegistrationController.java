@@ -1,7 +1,7 @@
 package com.example.authentication.controller;
 
 import com.example.authentication.dto.request.RegisterRequest;
-import com.example.authentication.dto.MessageDto;
+import com.example.authentication.dto.InfoMessageDto;
 import com.example.authentication.service.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,9 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
     @PostMapping
-    public ResponseEntity<MessageDto> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<InfoMessageDto> register(@Valid @RequestBody RegisterRequest request) {
         registrationService.register(request);
         return ResponseEntity.ok(
-                MessageDto.of(ACCOUNT_CREATED));
+                InfoMessageDto.of(ACCOUNT_CREATED));
     }
 }

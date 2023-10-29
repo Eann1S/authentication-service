@@ -2,7 +2,7 @@ package com.example.authentication.controller;
 
 import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.dto.JwtDto;
-import com.example.authentication.service.login.LoginService;
+import com.example.authentication.service.LoginService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/login/email")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class EmailLoginController {
 
     private final LoginService<EmailLoginRequest> loginService;
 
-    @PostMapping
+    @PostMapping("/login/email")
     public ResponseEntity<JwtDto> login(@Valid @RequestBody EmailLoginRequest request) {
         String jwt = loginService.login(request);
         return ResponseEntity.ok(JwtDto.of(jwt));

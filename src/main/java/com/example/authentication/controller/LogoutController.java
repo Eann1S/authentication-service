@@ -1,6 +1,6 @@
 package com.example.authentication.controller;
 
-import com.example.authentication.dto.MessageDto;
+import com.example.authentication.dto.InfoMessageDto;
 import com.example.authentication.service.LogoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +19,9 @@ public class LogoutController {
     private final LogoutService logoutService;
 
     @PostMapping
-    public ResponseEntity<MessageDto> logout(@RequestHeader("User-Id") Long id) {
+    public ResponseEntity<InfoMessageDto> logout(@RequestHeader("User-Id") Long id) {
         logoutService.logout(id);
         return ResponseEntity.ok(
-                MessageDto.of(LOGGED_OUT));
+                InfoMessageDto.of(LOGGED_OUT));
     }
 }
