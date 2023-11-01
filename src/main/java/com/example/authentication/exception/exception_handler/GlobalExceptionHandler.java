@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorDto> createErrorResponse(Exception exception, HttpStatus status) {
-        ErrorDto errorDto = ErrorDto.of(exception.getMessage(), System.currentTimeMillis());
+        ErrorDto errorDto = ErrorDto.of(exception.getMessage());
         return new ResponseEntity<>(errorDto, status);
     }
 
