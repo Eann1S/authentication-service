@@ -27,6 +27,12 @@
     </properties>
 
     <dependencies>
+        <!-- *** Actuator *** -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- *** Config processor *** -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
