@@ -16,8 +16,8 @@ public class LogoutServiceImpl implements LogoutService {
     private final JwtService jwtService;
 
     @Override
-    public void logout(Long accountId) {
-        Account account = accountService.findAccountByIdInDatabase(accountId);
+    public void logout(String email) {
+        Account account = accountService.findAccountByEmailInDatabase(email);
         jwtService.invalidateJwtOf(account);
         SecurityContextHolder.clearContext();
     }

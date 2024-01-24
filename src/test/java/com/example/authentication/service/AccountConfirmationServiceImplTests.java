@@ -1,8 +1,7 @@
 package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
-import com.example.authentication.service.impl.EmailAccountConfirmationService;
-import com.example.authentication.service.strategy.account_confirmation_strategy.AccountConfirmationStrategy;
+import com.example.authentication.service.impl.AccountConfirmationServiceImpl;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,19 +17,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, InstancioExtension.class})
-class EmailAccountConfirmationServiceTests {
+class AccountConfirmationServiceImplTests {
 
     @Mock
     private AccountService accountService;
     @Mock
     private ConfirmationCodeService confirmationCodeService;
-    @Mock
-    private AccountConfirmationStrategy accountConfirmationStrategy;
-    private EmailAccountConfirmationService emailAccountConfirmationService;
+    private AccountConfirmationServiceImpl accountConfirmationServiceImpl;
 
     @BeforeEach
     void setUp() {
-        emailAccountConfirmationService = new EmailAccountConfirmationService(accountService, confirmationCodeService, accountConfirmationStrategy);
+        accountConfirmationServiceImpl = new AccountConfirmationServiceImpl(accountService, confirmationCodeService);
     }
 
     @Nested
@@ -39,15 +36,15 @@ class EmailAccountConfirmationServiceTests {
         @ParameterizedTest
         @InstancioSource
         void shouldConfirmAccount_whenConfirmationCodeIsValid(Account account, String confirmationCode) {
-            when(accountService.findAccountByIdInDatabase(account.getId()))
+            when(accountService.findAccountByEmailInDatabase(account.getEmail()))
                     .thenReturn(account);
             when(confirmationCodeService.isConfirmationCodeOfAccountValid(account, confirmationCode))
                     .thenReturn(true);
 
-            emailAccountConfirmationService.confirmAccountWithId(account.getId(), confirmationCode);
+            accountConfirmationServiceImpl.confirmAccountWithEmail(account.getEmail(), confirmationCode);
 
             verify(confirmationCodeService).invalidateConfirmationCodeOf(account);
-            verify(accountConfirmationStrategy).confirmAccount(account);
+            verify(accountService).enableAccount(account);
         }
     }
 
@@ -57,12 +54,12 @@ class EmailAccountConfirmationServiceTests {
         @ParameterizedTest
         @InstancioSource
         void shouldThrowException_whenConfirmationCodeIsInvalid(Account account, String confirmationCode) {
-            when(accountService.findAccountByIdInDatabase(account.getId()))
+            when(accountService.findAccountByEmailInDatabase(account.getEmail()))
                     .thenReturn(account);
             when(confirmationCodeService.isConfirmationCodeOfAccountValid(account, confirmationCode))
                     .thenReturn(false);
 
-            assertThatThrownBy(() -> emailAccountConfirmationService.confirmAccountWithId(account.getId(), confirmationCode))
+            assertThatThrownBy(() -> accountConfirmationServiceImpl.confirmAccountWithEmail(account.getEmail(), confirmationCode))
                     .hasMessage(INVALID_CONFIRMATION_CODE.getMessage());
         }
     }

@@ -21,6 +21,8 @@ public class EmailLoginController {
     @PostMapping("/login/email")
     public ResponseEntity<JwtDto> login(@Valid @RequestBody EmailLoginRequest request) {
         String jwt = loginService.login(request);
-        return ResponseEntity.ok(JwtDto.of(jwt));
+        return ResponseEntity.ok(
+                JwtDto.of(jwt)
+        );
     }
 }

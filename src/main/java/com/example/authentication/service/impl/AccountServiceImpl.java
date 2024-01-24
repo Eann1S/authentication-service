@@ -52,4 +52,11 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByEmail(email)
                 .orElseThrow(() -> new AccountNotFoundException(email));
     }
+
+    @Override
+    public void enableAccount(Account account) {
+        account.setEnabled(true);
+        accountRepository.saveAndFlush(account);
+        log.info("account {} was verified", account.getId());
+    }
 }

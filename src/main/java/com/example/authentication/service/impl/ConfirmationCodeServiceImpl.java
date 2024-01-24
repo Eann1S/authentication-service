@@ -9,22 +9,18 @@ import com.example.authentication.service.strategy.code_generation_strategy.Conf
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
 @Service
-@Qualifier("email")
 @RequiredArgsConstructor
 @Slf4j
-public class EmailConfirmationCodeService implements ConfirmationCodeService {
+public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     private static final Duration CONFIRMATION_CODE_DURATION_EXPIRATION = Duration.ofHours(2);
     private final CachingService cachingService;
-    @Qualifier("email_confirmation_code")
     private final CacheKeyFormattingStrategy cacheKeyFormattingStrategy;
-    @Qualifier("email")
     private final ConfirmationCodeGenerationStrategy confirmationCodeGenerationStrategy;
 
     @Override

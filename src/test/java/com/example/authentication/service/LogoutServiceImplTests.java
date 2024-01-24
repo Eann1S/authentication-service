@@ -30,10 +30,10 @@ class LogoutServiceImplTests {
     @ParameterizedTest
     @InstancioSource
     void shouldLogout(Account account) {
-        when(accountService.findAccountByIdInDatabase(account.getId()))
+        when(accountService.findAccountByEmailInDatabase(account.getEmail()))
                 .thenReturn(account);
 
-        logoutService.logout(account.getId());
+        logoutService.logout(account.getEmail());
 
         verify(jwtService).invalidateJwtOf(account);
     }

@@ -24,6 +24,7 @@ public class RegistrationController {
     public ResponseEntity<InfoMessageDto> register(@Valid @RequestBody RegisterRequest request) {
         registrationService.register(request);
         return ResponseEntity.ok(
-                InfoMessageDto.of(ACCOUNT_CREATED));
+                InfoMessageDto.of(ACCOUNT_CREATED)
+        );
     }
 }

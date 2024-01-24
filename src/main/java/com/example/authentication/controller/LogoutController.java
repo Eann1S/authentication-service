@@ -19,9 +19,10 @@ public class LogoutController {
     private final LogoutService logoutService;
 
     @PostMapping
-    public ResponseEntity<InfoMessageDto> logout(@RequestHeader("User-Id") Long id) {
-        logoutService.logout(id);
+    public ResponseEntity<InfoMessageDto> logout(@RequestHeader("User-Email") String email) {
+        logoutService.logout(email);
         return ResponseEntity.ok(
-                InfoMessageDto.of(LOGGED_OUT));
+                InfoMessageDto.of(LOGGED_OUT)
+        );
     }
 }

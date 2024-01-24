@@ -1,13 +1,15 @@
 package com.example.authentication.service.strategy.credentials_validation_strategy;
 
 import com.example.authentication.dto.request.EmailLoginRequest;
+import com.example.authentication.exception.EmailNotConfirmedException;
 import com.example.authentication.exception.InvalidEmailCredentialsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,8 +24,10 @@ public class EmailCredentialsValidationStrategy implements CredentialsValidation
         try {
             Authentication authentication = createAuthenticationFrom(wrapperObject);
             authenticationProvider.authenticate(authentication);
-        } catch (AuthenticationException e) {
+        } catch (BadCredentialsException e) {
             throw new InvalidEmailCredentialsException();
+        } catch (DisabledException e) {
+            throw new EmailNotConfirmedException();
         }
     }
 

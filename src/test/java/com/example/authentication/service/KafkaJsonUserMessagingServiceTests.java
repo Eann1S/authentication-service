@@ -1,7 +1,6 @@
 package com.example.authentication.service;
 
 import com.example.authentication.config.kafka.KafkaTopicConfig;
-import com.example.authentication.dto.mq_dto.RegistrationDto;
 import com.example.authentication.service.impl.KafkaJsonUserMessagingService;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
@@ -32,12 +31,12 @@ class KafkaJsonUserMessagingServiceTests {
 
     @ParameterizedTest
     @InstancioSource
-    void shouldSendRegistrationDto(RegistrationDto registrationDto, String registrationTopic) {
+    void shouldSendMessage(String message, String registrationTopic) {
         when(kafkaTopicConfig.getRegistrationTopic())
                 .thenReturn(registrationTopic);
 
-        kafkaMessagingService.send(registrationDto);
+        kafkaMessagingService.send(message);
 
-        verify(kafkaTemplate).send(registrationTopic, toJson(registrationDto));
+        verify(kafkaTemplate).send(registrationTopic, toJson(message));
     }
 }

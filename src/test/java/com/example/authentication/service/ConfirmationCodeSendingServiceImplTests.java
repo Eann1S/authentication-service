@@ -1,7 +1,7 @@
 package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
-import com.example.authentication.service.impl.EmailConfirmationCodeSendingService;
+import com.example.authentication.service.impl.ConfirmationCodeSendingServiceImpl;
 import com.example.authentication.service.strategy.code_sending_strategy.ConfirmationCodeSendingStrategy;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
@@ -15,31 +15,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, InstancioExtension.class})
-class EmailConfirmationCodeSendingServiceTests {
+class ConfirmationCodeSendingServiceImplTests {
 
-    @Mock
-    private AccountService accountService;
     @Mock
     private ConfirmationCodeService confirmationCodeService;
     @Mock
     private ConfirmationCodeSendingStrategy confirmationCodeSendingStrategy;
-    private EmailConfirmationCodeSendingService confirmationCodeSendingService;
+    private ConfirmationCodeSendingServiceImpl confirmationCodeSendingService;
 
     @BeforeEach
     void setUp() {
-        confirmationCodeSendingService = new EmailConfirmationCodeSendingService(
-                accountService, confirmationCodeService, confirmationCodeSendingStrategy);
+        confirmationCodeSendingService = new ConfirmationCodeSendingServiceImpl(confirmationCodeService, confirmationCodeSendingStrategy);
     }
 
     @ParameterizedTest
     @InstancioSource
-    void shouldSendConfirmationCodeForAccountWithId(Account account, String confirmationCode) {
-        when(accountService.findAccountByIdInDatabase(account.getId()))
-                .thenReturn(account);
+    void shouldSendConfirmationCodeForAccount(Account account, String confirmationCode) {
         when(confirmationCodeService.generateConfirmationCodeFor(account))
                 .thenReturn(confirmationCode);
 
-        confirmationCodeSendingService.sendConfirmationCodeForAccountWithId(account.getId());
+        confirmationCodeSendingService.sendConfirmationCodeForAccount(account);
 
         verify(confirmationCodeSendingStrategy).sendConfirmationCode(account, confirmationCode);
     }

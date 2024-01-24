@@ -20,13 +20,12 @@ import java.util.Collections;
 public class Account implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private Long id;
     private String email;
     private String password;
     @Enumerated(value = EnumType.STRING)
     private Role role;
-    private boolean emailConfirmed;
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;

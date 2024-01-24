@@ -16,4 +16,6 @@ public interface AccountService {
     Account findAccountByIdInDatabase(Long accountId);
 
     Account findAccountByEmailInDatabase(String email);
+
+    void enableAccount(Account account);
 }

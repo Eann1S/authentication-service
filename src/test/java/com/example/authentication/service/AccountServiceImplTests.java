@@ -33,7 +33,7 @@ class AccountServiceImplTests {
     private AccountRepository accountRepository;
     @Mock
     private AccountMapper accountMapper;
-    private AccountService accountService;
+    private AccountServiceImpl accountService;
 
     @BeforeEach
     void setUp() {
@@ -104,6 +104,16 @@ class AccountServiceImplTests {
             assertThat(actualAccount).isEqualTo(account);
         }
 
+        @ParameterizedTest
+        @InstancioSource
+        void shouldEnableAccount(Account account) {
+            account.setEnabled(false);
+
+            accountService.enableAccount(account);
+
+            assertThat(account.isEnabled()).isTrue();
+            verify(accountRepository).saveAndFlush(account);
+        }
     }
     @Nested
     class FailureCases {

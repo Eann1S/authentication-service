@@ -7,13 +7,11 @@ import com.example.authentication.service.JwtService;
 import com.example.authentication.service.LoginService;
 import com.example.authentication.service.strategy.credentials_validation_strategy.CredentialsValidationStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
-@Qualifier("email")
 @RequiredArgsConstructor
-public class EmailLoginService implements LoginService<EmailLoginRequest> {
+public class LoginServiceImpl implements LoginService<EmailLoginRequest> {
 
     private final AccountService accountService;
     private final JwtService jwtService;

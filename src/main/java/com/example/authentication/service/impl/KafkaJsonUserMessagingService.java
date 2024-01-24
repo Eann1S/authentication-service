@@ -1,7 +1,6 @@
 package com.example.authentication.service.impl;
 
 import com.example.authentication.config.kafka.KafkaTopicConfig;
-import com.example.authentication.dto.mq_dto.RegistrationDto;
 import com.example.authentication.service.UserMessagingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +20,10 @@ public class KafkaJsonUserMessagingService implements UserMessagingService {
     private final KafkaTopicConfig kafkaTopicConfig;
 
     @Override
-    public void send(RegistrationDto registrationDto) {
+    public <T> void send(T message) {
         String registrationTopic = kafkaTopicConfig.getRegistrationTopic();
-        String registrationJson = toJson(registrationDto);
-        kafkaTemplate.send(registrationTopic, registrationJson);
-        log.info("{} was sent to {}", registrationJson, registrationTopic);
+        String json = toJson(message);
+        kafkaTemplate.send(registrationTopic, json);
+        log.info("{} was sent to {}", json, registrationTopic);
     }
 }

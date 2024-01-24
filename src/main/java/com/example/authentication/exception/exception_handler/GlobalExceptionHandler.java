@@ -35,7 +35,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             InvalidAuthenticationTokenException.class,
             ExpiredAuthenticationTokenException.class,
-            InvalidEmailCredentialsException.class
+            InvalidEmailCredentialsException.class,
+            EmailNotConfirmedException.class
     })
     public ResponseEntity<ErrorDto> handleForbiddenException(Exception exception) {
         return createErrorResponse(exception, FORBIDDEN);
@@ -55,7 +56,7 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorDto> createErrorResponse(Exception exception, HttpStatus status) {
-        ErrorDto errorDto = ErrorDto.of(exception.getMessage());
+        ErrorDto errorDto = new ErrorDto(exception.getMessage());
         return new ResponseEntity<>(errorDto, status);
     }
 

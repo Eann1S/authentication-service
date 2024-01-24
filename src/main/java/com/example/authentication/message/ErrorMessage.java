@@ -9,7 +9,8 @@ public enum ErrorMessage {
     EXPIRED_AUTH_TOKEN("Your authentication token has expired."),
     INVALID_AUTH_TOKEN("Your authentication token is invalid."),
     INVALID_CONFIRMATION_CODE("Your confirmation code is invalid."),
-    INVALID_EMAIL_CREDENTIALS("Your email or password is invalid.");
+    INVALID_EMAIL_CREDENTIALS("Your email or password is invalid."),
+    EMAIL_NOT_CONFIRMED("Your email isn't confirmed.");
 
     @Getter
     private final String message;

@@ -1,7 +1,7 @@
 package com.example.authentication.service;
 
 import com.example.authentication.entity.Account;
-import com.example.authentication.service.impl.EmailConfirmationCodeService;
+import com.example.authentication.service.impl.ConfirmationCodeServiceImpl;
 import com.example.authentication.service.strategy.cache_key_strategy.CacheKeyFormattingStrategy;
 import com.example.authentication.service.strategy.code_generation_strategy.ConfirmationCodeGenerationStrategy;
 import org.instancio.junit.InstancioSource;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EmailConfirmationCodeServiceTests {
+class ConfirmationCodeServiceImplTests {
 
     @Mock
     private CachingService cachingService;
@@ -31,7 +31,7 @@ class EmailConfirmationCodeServiceTests {
 
     @BeforeEach
     void setUp() {
-        confirmationCodeService = new EmailConfirmationCodeService(
+        confirmationCodeService = new ConfirmationCodeServiceImpl(
                 cachingService, cacheKeyFormattingStrategy, confirmationCodeGenerationStrategy);
     }
 

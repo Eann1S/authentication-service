@@ -30,11 +30,13 @@ class RegistrationServiceImplTests {
     private UserMessagingService userMessagingService;
     @Mock
     private AccountMapper accountMapper;
+    @Mock
+    private ConfirmationCodeSendingService confirmationCodeSendingService;
     private RegistrationService registrationService;
 
     @BeforeEach
     void setUp() {
-        registrationService = new RegistrationServiceImpl(accountService, userMessagingService, accountMapper);
+        registrationService = new RegistrationServiceImpl(accountService, userMessagingService, accountMapper, confirmationCodeSendingService);
     }
 
     @ParameterizedTest
@@ -49,6 +51,7 @@ class RegistrationServiceImplTests {
 
         registrationService.register(registerRequest);
 
+        verify(confirmationCodeSendingService).sendConfirmationCodeForAccount(account);
         verify(userMessagingService).send(registrationDto);
     }
 

@@ -2,7 +2,7 @@ package com.example.authentication.service;
 
 import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.entity.Account;
-import com.example.authentication.service.impl.EmailLoginService;
+import com.example.authentication.service.impl.LoginServiceImpl;
 import com.example.authentication.service.strategy.credentials_validation_strategy.CredentialsValidationStrategy;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, InstancioExtension.class})
-class EmailLoginServiceTests {
+class LoginServiceImplTests {
 
     @Mock
     private AccountService accountService;
@@ -25,11 +25,11 @@ class EmailLoginServiceTests {
     private JwtService jwtService;
     @Mock
     private CredentialsValidationStrategy<EmailLoginRequest> credentialsValidationStrategy;
-    private EmailLoginService emailLoginService;
+    private LoginServiceImpl loginServiceImpl;
 
     @BeforeEach
     void setUp() {
-        emailLoginService = new EmailLoginService(accountService, jwtService, credentialsValidationStrategy);
+        loginServiceImpl = new LoginServiceImpl(accountService, jwtService, credentialsValidationStrategy);
     }
 
     @ParameterizedTest
@@ -40,7 +40,7 @@ class EmailLoginServiceTests {
         when(jwtService.createJwtFor(account))
                 .thenReturn(jwt);
 
-        String actualJwt = emailLoginService.login(emailLoginRequest);
+        String actualJwt = loginServiceImpl.login(emailLoginRequest);
 
         assertThat(actualJwt).isEqualTo(jwt);
         verify(jwtService).invalidateJwtOf(account);

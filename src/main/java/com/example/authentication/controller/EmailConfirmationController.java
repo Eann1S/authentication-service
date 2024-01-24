@@ -20,11 +20,12 @@ public class EmailConfirmationController {
 
     @PostMapping("/confirm/email/{confirmationCode}")
     public ResponseEntity<InfoMessageDto> confirmEmail(
-            @RequestHeader(name = "User-Id") Long id,
+            @RequestHeader(name = "User-Email") String email,
             @PathVariable String confirmationCode
     ) {
-        accountConfirmationService.confirmAccountWithId(id, confirmationCode);
+        accountConfirmationService.confirmAccountWithEmail(email, confirmationCode);
         return ResponseEntity.ok(
-                InfoMessageDto.of(EMAIL_CONFIRMED));
+                InfoMessageDto.of(EMAIL_CONFIRMED)
+        );
     }
 }
