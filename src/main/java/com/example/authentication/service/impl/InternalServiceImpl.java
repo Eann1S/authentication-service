@@ -13,7 +13,7 @@ public class InternalServiceImpl implements InternalService {
 
     private final JwtService jwtService;
 
-    public Long getIdOfAuthorizedAccount(String jwt) {
+    public String getIdOfAuthorizedAccount(String jwt) {
         Account account = jwtService.extractAccountFrom(jwt);
         if (!jwtService.isAccountAuthorized(account, jwt)) {
             throw new InvalidAuthenticationTokenException();

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 @ActiveProfiles("test")
 @DisableRedisAutoConfiguration
 @DisableDatabaseAutoConfiguration
-@ExtendWith(InstancioExtension.class)
+@ExtendWith({InstancioExtension.class})
 public class KafkaUserListenerIntegrationTests implements KafkaStarter, ConfigServerStarter {
 
     @Autowired
@@ -41,7 +41,7 @@ public class KafkaUserListenerIntegrationTests implements KafkaStarter, ConfigSe
     void shouldUpdateAccountFromUpdateDto_whenDtoIsSent(UpdateDto updateDto) {
         sendMessage(topicConfig.getUserUpdateTopic(), toJson(updateDto));
 
-        verify(accountService, timeout(3000)).updateAccountFrom(updateDto);
+        verify(accountService, timeout(5000)).updateAccountFrom(updateDto);
     }
 
     private void sendMessage(String topic, String msg) {

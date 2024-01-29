@@ -21,7 +21,7 @@ public class Account implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private String id;
     private String email;
     private String password;
     @Enumerated(value = EnumType.STRING)

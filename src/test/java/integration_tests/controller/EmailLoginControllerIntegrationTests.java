@@ -1,9 +1,10 @@
 package integration_tests.controller;
 
 import com.example.authentication.AuthenticationApplication;
-import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.dto.JwtDto;
+import com.example.authentication.dto.request.EmailLoginRequest;
 import com.example.authentication.entity.Account;
+import com.example.authentication.service.strategy.code_sending_strategy.EmailConfirmationCodeSendingStrategy;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,6 +35,7 @@ import static test_util.constant.UrlConstants.EMAIL_LOGIN_URL;
 @ActiveProfiles("test")
 @ExtendWith(InstancioExtension.class)
 @AutoConfigureMockMvc
+@MockBean(classes = EmailConfirmationCodeSendingStrategy.class)
 public class EmailLoginControllerIntegrationTests implements AllServicesStarter {
 
     @Autowired
@@ -44,7 +47,8 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
     @InstancioSource
     void shouldLoginIntoAccount_whenRequestIsValid(Account account) throws Exception {
         integrationTestAccountUtil.registerAccount(account);
-        EmailLoginRequest request = EmailLoginRequest.of(account.getEmail(), account.getPassword());
+        integrationTestAccountUtil.enableAccountByEmail(account.getEmail());
+        EmailLoginRequest request = new EmailLoginRequest(account.getEmail(), account.getPassword());
 
         String jsonResponse = loginAndExpectStatus(request, OK);
 
@@ -55,7 +59,7 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
     @ParameterizedTest
     @InstancioSource
     void shouldNotLoginIntoAccount_whenAccountDoesNotExist(Account account) throws Exception {
-        EmailLoginRequest request = EmailLoginRequest.of(account.getEmail(), account.getPassword());
+        EmailLoginRequest request = new EmailLoginRequest(account.getEmail(), account.getPassword());
 
         String jsonResponse = loginAndExpectStatus(request, FORBIDDEN);
 
@@ -65,7 +69,8 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
     @ParameterizedTest
     @InstancioSource
     void shouldNotLoginIntoAccount_whenEmailAndPasswordAreInvalid(Account account, EmailLoginRequest request) throws Exception {
-        integrationTestAccountUtil.saveAccountToDatabase(account);
+        integrationTestAccountUtil.registerAccount(account);
+        integrationTestAccountUtil.enableAccountByEmail(account.getEmail());
 
         String jsonResponse = loginAndExpectStatus(request, FORBIDDEN);
 

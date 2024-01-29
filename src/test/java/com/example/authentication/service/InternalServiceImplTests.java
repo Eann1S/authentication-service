@@ -35,7 +35,7 @@ class InternalServiceImplTests {
         when(jwtService.isAccountAuthorized(account, jwt))
                 .thenReturn(true);
 
-        Long accountId = internalService.getIdOfAuthorizedAccount(jwt);
+        String accountId = internalService.getIdOfAuthorizedAccount(jwt);
 
         assertThat(accountId).isEqualTo(account.getId());
     }

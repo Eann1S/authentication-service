@@ -4,7 +4,7 @@ import static com.example.authentication.message.ErrorMessage.EMAIL_NOT_CONFIRME
 
 public class EmailNotConfirmedException extends RuntimeException {
 
-    public EmailNotConfirmedException() {
-        super(EMAIL_NOT_CONFIRMED.getMessage());
+    public EmailNotConfirmedException(Throwable cause) {
+        super(EMAIL_NOT_CONFIRMED.getMessage(), cause);
     }
 }

@@ -9,11 +9,9 @@ import com.example.authentication.service.strategy.code_generation_strategy.Conf
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {

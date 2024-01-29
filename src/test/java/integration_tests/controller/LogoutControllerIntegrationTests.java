@@ -53,6 +53,6 @@ public class LogoutControllerIntegrationTests implements AllServicesStarter {
 
     private ResultActions performLogoutRequest(Account account) throws Exception {
         return mockMvc.perform(post(LOGOUT_URL)
-                .header("User-Id", account.getId()));
+                .header("User-Email", account.getEmail()));
     }
 }

@@ -5,6 +5,7 @@ import com.example.authentication.exception.*;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -36,7 +37,8 @@ public class GlobalExceptionHandler {
             InvalidAuthenticationTokenException.class,
             ExpiredAuthenticationTokenException.class,
             InvalidEmailCredentialsException.class,
-            EmailNotConfirmedException.class
+            EmailNotConfirmedException.class,
+            AuthenticationException.class
     })
     public ResponseEntity<ErrorDto> handleForbiddenException(Exception exception) {
         return createErrorResponse(exception, FORBIDDEN);

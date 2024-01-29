@@ -128,7 +128,7 @@ class AccountServiceImplTests {
 
         @ParameterizedTest
         @InstancioSource
-        void shouldThrowException_whenAccountWithGivenIdDoesNotExist(Long id) {
+        void shouldThrowException_whenAccountWithGivenIdDoesNotExist(String id) {
             assertThatThrownBy(() -> accountService.findAccountByIdInDatabase(id))
                     .isInstanceOf(AccountNotFoundException.class)
                     .hasMessage(ACCOUNT_NOT_FOUND.formatWith(id));

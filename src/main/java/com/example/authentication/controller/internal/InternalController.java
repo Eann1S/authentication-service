@@ -15,9 +15,7 @@ public class InternalController {
 
     @GetMapping("/authorized-account/id/{jwt}")
     public ResponseEntity<String> getIdOfAuthorizedAccount(@PathVariable String jwt) {
-        Long id = internalService.getIdOfAuthorizedAccount(jwt);
-        return ResponseEntity.ok(
-                id.toString()
-        );
+        String id = internalService.getIdOfAuthorizedAccount(jwt);
+        return ResponseEntity.ok(id);
     }
 }

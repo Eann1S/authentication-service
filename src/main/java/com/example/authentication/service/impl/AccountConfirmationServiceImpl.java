@@ -6,9 +6,7 @@ import com.example.authentication.service.AccountConfirmationService;
 import com.example.authentication.service.AccountService;
 import com.example.authentication.service.ConfirmationCodeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
 @RequiredArgsConstructor
 public class AccountConfirmationServiceImpl implements AccountConfirmationService {
 

@@ -7,9 +7,7 @@ import com.example.authentication.service.JwtService;
 import com.example.authentication.service.LoginService;
 import com.example.authentication.service.strategy.credentials_validation_strategy.CredentialsValidationStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService<EmailLoginRequest> {
 

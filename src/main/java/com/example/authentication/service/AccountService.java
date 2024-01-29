@@ -13,7 +13,7 @@ public interface AccountService {
 
     void updateAccountFrom(UpdateDto updateDto);
 
-    Account findAccountByIdInDatabase(Long accountId);
+    Account findAccountByIdInDatabase(String accountId);
 
     Account findAccountByEmailInDatabase(String email);
 

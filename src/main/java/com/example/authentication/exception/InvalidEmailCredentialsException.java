@@ -4,7 +4,7 @@ import static com.example.authentication.message.ErrorMessage.INVALID_EMAIL_CRED
 
 public class InvalidEmailCredentialsException extends RuntimeException {
 
-    public InvalidEmailCredentialsException() {
-        super(INVALID_EMAIL_CREDENTIALS.getMessage());
+    public InvalidEmailCredentialsException(Throwable cause) {
+        super(INVALID_EMAIL_CREDENTIALS.getMessage(), cause);
     }
 }

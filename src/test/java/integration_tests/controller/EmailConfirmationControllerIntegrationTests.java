@@ -47,7 +47,7 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
         account = integrationTestAccountUtil.saveAccountToDatabase(account);
         String confirmationCode = confirmationCodeService.generateConfirmationCodeFor(account);
 
-        String jsonResponse = confirmEmailAndExpectStatus(account.getId(), confirmationCode, OK);
+        String jsonResponse = confirmEmailAndExpectStatus(account, confirmationCode, OK);
 
         assertThat(jsonResponse).contains(EMAIL_CONFIRMED.getMessage());
     }
@@ -57,14 +57,14 @@ public class EmailConfirmationControllerIntegrationTests implements AllServicesS
     void shouldReturnErrorResponse_whenConfirmationCodeIsInvalid(Account account, String confirmationCode) throws Exception {
         account = integrationTestAccountUtil.saveAccountToDatabase(account);
 
-        String jsonResponse = confirmEmailAndExpectStatus(account.getId(), confirmationCode, BAD_REQUEST);
+        String jsonResponse = confirmEmailAndExpectStatus(account, confirmationCode, BAD_REQUEST);
 
         assertThat(jsonResponse).contains(INVALID_CONFIRMATION_CODE.getMessage());
     }
 
-    private String confirmEmailAndExpectStatus(Long userId, String confirmationCode, HttpStatus status) throws Exception {
+    private String confirmEmailAndExpectStatus(Account account, String confirmationCode, HttpStatus status) throws Exception {
         ResultActions resultActions = mockMvc.perform(post(CONFIRM_EMAIL_URL, confirmationCode)
-                .header("User-Id", userId));
+                .header("User-Email", account.getEmail()));
         return getContentWithExpectedStatus(resultActions, status);
     }
 }

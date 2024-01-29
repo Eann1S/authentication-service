@@ -9,8 +9,4 @@ public record EmailLoginRequest(
         @NotBlank(message = "{password.not_blank}")
         String password
 ) {
-
-        public static EmailLoginRequest of(String email, String password) {
-                return new EmailLoginRequest(email, password);
-        }
 }
