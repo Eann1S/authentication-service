@@ -27,8 +27,8 @@ class KafkaUserListenerTests {
 
     @ParameterizedTest
     @InstancioSource
-    void shouldUpdateAccountFromUpdateDtoMessage(UpdateDto updateDto) {
-        kafkaUserListener.updateAccountFromUpdateDtoMessage(toJson(updateDto));
+    void shouldUpdateAccountFromUpdateMessage(UpdateDto updateDto) {
+        kafkaUserListener.updateAccountFromUpdateMessage(toJson(updateDto));
 
         verify(accountService).updateAccountFrom(updateDto);
     }

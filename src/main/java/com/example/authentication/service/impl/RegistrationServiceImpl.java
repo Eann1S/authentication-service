@@ -28,7 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         Account account = accountService.createAccountFrom(registerRequest, Role.USER);
         confirmationCodeSendingService.sendConfirmationCodeForAccount(account);
         RegistrationDto registrationDto = accountMapper.mapAccountToRegistrationDto(account, registerRequest.username());
-        userMessagingService.send(registrationDto);
+        userMessagingService.sendRegisterMessage(registrationDto);
     }
 
     private void throwExceptionIfAccountWithGivenEmailAlreadyExists(String email) {

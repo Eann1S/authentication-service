@@ -52,7 +52,7 @@ class RegistrationServiceImplTests {
         registrationService.register(registerRequest);
 
         verify(confirmationCodeSendingService).sendConfirmationCodeForAccount(account);
-        verify(userMessagingService).send(registrationDto);
+        verify(userMessagingService).sendRegisterMessage(registrationDto);
     }
 
     @ParameterizedTest

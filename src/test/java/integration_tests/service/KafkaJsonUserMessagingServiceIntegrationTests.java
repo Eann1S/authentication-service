@@ -41,7 +41,7 @@ public class KafkaJsonUserMessagingServiceIntegrationTests implements KafkaStart
     @ParameterizedTest
     @InstancioSource
     void shouldSendDto(RegistrationDto registrationDto) {
-        userMessagingService.send(registrationDto);
+        userMessagingService.sendRegisterMessage(registrationDto);
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> testKafkaListener.isMessageReceived());
 
         RegistrationDto actualRegistrationDto = fromJson(testKafkaListener.messagePayload, RegistrationDto.class);

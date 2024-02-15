@@ -18,9 +18,9 @@ public class KafkaUserListener {
     private final AccountService accountService;
 
     @KafkaListener(topics = "#{kafkaTopicConfig.getUserUpdateTopic()}")
-    public void updateAccountFromUpdateDtoMessage(String updateDtoMessage) {
-        log.info("received update dto {}", updateDtoMessage);
-        UpdateDto updateDto = fromJson(updateDtoMessage, UpdateDto.class);
+    public void updateAccountFromUpdateMessage(String updateMessage) {
+        log.info("received update dto {}", updateMessage);
+        UpdateDto updateDto = fromJson(updateMessage, UpdateDto.class);
         accountService.updateAccountFrom(updateDto);
     }
 }
