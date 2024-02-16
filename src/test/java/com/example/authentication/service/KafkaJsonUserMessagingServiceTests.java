@@ -1,7 +1,7 @@
 package com.example.authentication.service;
 
 import com.example.authentication.config.kafka.KafkaTopicConfig;
-import com.example.authentication.dto.mq_dto.RegistrationDto;
+import com.example.authentication.dto.mq_dto.RegisterDto;
 import com.example.authentication.service.impl.KafkaJsonUserMessagingService;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import static com.example.authentication.json.JsonConverter.toJson;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,12 +32,12 @@ class KafkaJsonUserMessagingServiceTests {
 
     @ParameterizedTest
     @InstancioSource
-    void shouldSendRegisterMessage(RegistrationDto registrationDto, String registrationTopic) {
-        when(kafkaTopicConfig.getRegistrationTopic())
-                .thenReturn(registrationTopic);
+    void shouldSendRegisterMessage(RegisterDto registerDto, String userRegisterTopic) {
+        when(kafkaTopicConfig.getUserRegisterTopic())
+                .thenReturn(userRegisterTopic);
 
-        kafkaMessagingService.sendRegisterMessage(registrationDto);
+        kafkaMessagingService.sendRegisterMessage(registerDto);
 
-        verify(kafkaTemplate).send(registrationTopic, toJson(registrationDto));
+        verify(kafkaTemplate).send(userRegisterTopic, GSON.toJson(registerDto));
     }
 }

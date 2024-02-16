@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.example.authentication.json.JsonConverter.fromJson;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = AuthenticationApplication.class)
@@ -42,7 +42,7 @@ public class RedisCachingServiceIntegrationTests implements RedisStarter, Config
 
         String jsonFromCache = valueOperations.get(key);
 
-        assertThat(fromJson(jsonFromCache, String.class)).isEqualTo(value);
+        assertThat(GSON.fromJson(jsonFromCache, String.class)).isEqualTo(value);
     }
 
     @ParameterizedTest

@@ -18,7 +18,7 @@ import test_util.starter.AllServicesStarter;
 
 import java.util.Locale;
 
-import static com.example.authentication.json.JsonConverter.toJson;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
 import static com.example.authentication.message.ErrorMessage.ACCOUNT_ALREADY_EXISTS;
 import static com.example.authentication.message.InfoMessage.ACCOUNT_CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,6 +111,6 @@ public class RegistrationControllerIntegrationTests implements AllServicesStarte
     private ResultActions performRegisterRequest(RegisterRequest request) throws Exception {
         return mockMvc.perform(post(REGISTER_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)));
+                .content(GSON.toJson(request)));
     }
 }

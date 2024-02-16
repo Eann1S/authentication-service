@@ -15,11 +15,11 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "kafka.topics")
 public class KafkaTopicConfig {
 
-    private String registrationTopic;
+    private String userRegisterTopic;
     private String userUpdateTopic;
 
     @Bean
     public NewTopic createRegistrationTopic() {
-        return new NewTopic(registrationTopic, 1, (short) 1);
+        return new NewTopic(userRegisterTopic, 1, (short) 1);
     }
 }

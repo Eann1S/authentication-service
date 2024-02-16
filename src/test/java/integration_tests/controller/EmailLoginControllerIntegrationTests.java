@@ -21,8 +21,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import test_util.IntegrationTestAccountUtil;
 import test_util.starter.AllServicesStarter;
 
-import static com.example.authentication.json.JsonConverter.fromJson;
-import static com.example.authentication.json.JsonConverter.toJson;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
 import static com.example.authentication.message.ErrorMessage.INVALID_EMAIL_CREDENTIALS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -52,7 +51,7 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
 
         String jsonResponse = loginAndExpectStatus(request, OK);
 
-        JwtDto jwtDto = fromJson(jsonResponse, JwtDto.class);
+        JwtDto jwtDto = GSON.fromJson(jsonResponse, JwtDto.class);
         assertThat(jwtDto.jwt()).isNotNull();
     }
 
@@ -85,6 +84,6 @@ public class EmailLoginControllerIntegrationTests implements AllServicesStarter 
     private ResultActions performLoginRequest(EmailLoginRequest request) throws Exception {
         return mockMvc.perform(post(EMAIL_LOGIN_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)));
+                .content(GSON.toJson(request)));
     }
 }

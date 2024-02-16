@@ -1,11 +1,11 @@
 package com.example.authentication.service;
 
-import com.example.authentication.dto.mq_dto.RegistrationDto;
+import com.example.authentication.dto.mq_dto.RegisterDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
 import com.example.authentication.exception.AccountAlreadyExistsException;
 import com.example.authentication.mapper.AccountMapper;
-import com.example.authentication.service.impl.RegistrationServiceImpl;
+import com.example.authentication.service.impl.RegisterServiceImpl;
 import org.instancio.junit.InstancioExtension;
 import org.instancio.junit.InstancioSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, InstancioExtension.class})
-class RegistrationServiceImplTests {
+class RegisterServiceImplTests {
 
     @Mock
     private AccountService accountService;
@@ -32,27 +32,27 @@ class RegistrationServiceImplTests {
     private AccountMapper accountMapper;
     @Mock
     private ConfirmationCodeSendingService confirmationCodeSendingService;
-    private RegistrationService registrationService;
+    private RegisterService registerService;
 
     @BeforeEach
     void setUp() {
-        registrationService = new RegistrationServiceImpl(accountService, userMessagingService, accountMapper, confirmationCodeSendingService);
+        registerService = new RegisterServiceImpl(accountService, userMessagingService, accountMapper, confirmationCodeSendingService);
     }
 
     @ParameterizedTest
     @InstancioSource
-    void shouldRegisterAccount(RegisterRequest registerRequest, Account account, RegistrationDto registrationDto) {
+    void shouldRegisterAccount(RegisterRequest registerRequest, Account account, RegisterDto registerDto) {
         when(accountService.doesAccountExistsWithEmail(registerRequest.email()))
                 .thenReturn(false);
         when(accountService.createAccountFrom(eq(registerRequest), any()))
                 .thenReturn(account);
         when(accountMapper.mapAccountToRegistrationDto(account, registerRequest.username()))
-                .thenReturn(registrationDto);
+                .thenReturn(registerDto);
 
-        registrationService.register(registerRequest);
+        registerService.register(registerRequest);
 
         verify(confirmationCodeSendingService).sendConfirmationCodeForAccount(account);
-        verify(userMessagingService).sendRegisterMessage(registrationDto);
+        verify(userMessagingService).sendRegisterMessage(registerDto);
     }
 
     @ParameterizedTest
@@ -61,7 +61,7 @@ class RegistrationServiceImplTests {
         when(accountService.doesAccountExistsWithEmail(registerRequest.email()))
                 .thenReturn(true);
 
-        assertThatThrownBy(() -> registrationService.register(registerRequest))
+        assertThatThrownBy(() -> registerService.register(registerRequest))
                 .isInstanceOf(AccountAlreadyExistsException.class)
                 .hasMessage(ACCOUNT_ALREADY_EXISTS.formatWith(registerRequest.email()));
     }

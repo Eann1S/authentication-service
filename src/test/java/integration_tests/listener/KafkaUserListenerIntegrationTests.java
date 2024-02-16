@@ -12,17 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import test_util.annotation.DisableDatabaseAutoConfiguration;
 import test_util.annotation.DisableRedisAutoConfiguration;
 import test_util.starter.ConfigServerStarter;
 import test_util.starter.KafkaStarter;
 
-import static com.example.authentication.json.JsonConverter.toJson;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = AuthenticationApplication.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 @ActiveProfiles("test")
 @DisableRedisAutoConfiguration
 @DisableDatabaseAutoConfiguration
@@ -39,7 +40,9 @@ public class KafkaUserListenerIntegrationTests implements KafkaStarter, ConfigSe
     @ParameterizedTest
     @InstancioSource
     void shouldUpdateAccountFromUpdateDto_whenDtoIsSent(UpdateDto updateDto) {
-        sendMessage(topicConfig.getUserUpdateTopic(), toJson(updateDto));
+        doNothing().when(accountService).updateAccountFrom(updateDto);
+
+        sendMessage(topicConfig.getUserUpdateTopic(), GSON.toJson(updateDto));
 
         verify(accountService, timeout(5000)).updateAccountFrom(updateDto);
     }

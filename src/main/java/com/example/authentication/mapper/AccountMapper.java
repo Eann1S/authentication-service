@@ -1,6 +1,6 @@
 package com.example.authentication.mapper;
 
-import com.example.authentication.dto.mq_dto.RegistrationDto;
+import com.example.authentication.dto.mq_dto.RegisterDto;
 import com.example.authentication.dto.mq_dto.UpdateDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
@@ -30,5 +30,5 @@ public interface AccountMapper {
     Account updateAccountFieldsFrom(UpdateDto updateDto, @MappingTarget Account accountToUpdate);
 
     @Mapping(target = "username", expression = "java(username)")
-    RegistrationDto mapAccountToRegistrationDto(Account account, @Context String username);
+    RegisterDto mapAccountToRegistrationDto(Account account, @Context String username);
 }

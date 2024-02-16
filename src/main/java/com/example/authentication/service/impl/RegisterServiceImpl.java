@@ -1,6 +1,6 @@
 package com.example.authentication.service.impl;
 
-import com.example.authentication.dto.mq_dto.RegistrationDto;
+import com.example.authentication.dto.mq_dto.RegisterDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
 import com.example.authentication.entity.Role;
@@ -8,14 +8,14 @@ import com.example.authentication.exception.AccountAlreadyExistsException;
 import com.example.authentication.mapper.AccountMapper;
 import com.example.authentication.service.AccountService;
 import com.example.authentication.service.ConfirmationCodeSendingService;
-import com.example.authentication.service.RegistrationService;
+import com.example.authentication.service.RegisterService;
 import com.example.authentication.service.UserMessagingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class RegistrationServiceImpl implements RegistrationService {
+public class RegisterServiceImpl implements RegisterService {
 
     private final AccountService accountService;
     private final UserMessagingService userMessagingService;
@@ -27,8 +27,8 @@ public class RegistrationServiceImpl implements RegistrationService {
         throwExceptionIfAccountWithGivenEmailAlreadyExists(registerRequest.email());
         Account account = accountService.createAccountFrom(registerRequest, Role.USER);
         confirmationCodeSendingService.sendConfirmationCodeForAccount(account);
-        RegistrationDto registrationDto = accountMapper.mapAccountToRegistrationDto(account, registerRequest.username());
-        userMessagingService.sendRegisterMessage(registrationDto);
+        RegisterDto registerDto = accountMapper.mapAccountToRegistrationDto(account, registerRequest.username());
+        userMessagingService.sendRegisterMessage(registerDto);
     }
 
     private void throwExceptionIfAccountWithGivenEmailAlreadyExists(String email) {

@@ -7,8 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import static com.example.authentication.json.JsonConverter.fromJson;
-
+import static com.example.authentication.config.gson.GsonConfig.GSON;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class KafkaUserListener {
     @KafkaListener(topics = "#{kafkaTopicConfig.getUserUpdateTopic()}")
     public void updateAccountFromUpdateMessage(String updateMessage) {
         log.info("received update dto {}", updateMessage);
-        UpdateDto updateDto = fromJson(updateMessage, UpdateDto.class);
+        UpdateDto updateDto = GSON.fromJson(updateMessage, UpdateDto.class);
         accountService.updateAccountFrom(updateDto);
     }
 }

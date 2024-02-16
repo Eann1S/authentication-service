@@ -1,6 +1,6 @@
 package com.example.authentication.mapper;
 
-import com.example.authentication.dto.mq_dto.RegistrationDto;
+import com.example.authentication.dto.mq_dto.RegisterDto;
 import com.example.authentication.dto.mq_dto.UpdateDto;
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.entity.Account;
@@ -57,10 +57,10 @@ class AccountMapperTests {
     @ParameterizedTest
     @InstancioSource
     void shouldMapAccountToRegistrationDto(Account account, String username) {
-        RegistrationDto registrationDto = accountMapper.mapAccountToRegistrationDto(account, username);
+        RegisterDto registerDto = accountMapper.mapAccountToRegistrationDto(account, username);
 
-        assertThat(registrationDto)
-                .extracting(RegistrationDto::id, RegistrationDto::email, RegistrationDto::username)
+        assertThat(registerDto)
+                .extracting(RegisterDto::id, RegisterDto::email, RegisterDto::username)
                 .containsExactly(account.getId(), account.getEmail(), username);
     }
 }

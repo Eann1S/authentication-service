@@ -10,8 +10,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.example.authentication.json.JsonConverter.toJson;
 import static org.mockito.Mockito.verify;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
+
 
 @ExtendWith({MockitoExtension.class, InstancioExtension.class})
 class KafkaUserListenerTests {
@@ -28,7 +29,7 @@ class KafkaUserListenerTests {
     @ParameterizedTest
     @InstancioSource
     void shouldUpdateAccountFromUpdateMessage(UpdateDto updateDto) {
-        kafkaUserListener.updateAccountFromUpdateMessage(toJson(updateDto));
+        kafkaUserListener.updateAccountFromUpdateMessage(GSON.toJson(updateDto));
 
         verify(accountService).updateAccountFrom(updateDto);
     }

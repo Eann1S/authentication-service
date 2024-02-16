@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.example.authentication.json.JsonConverter.fromJson;
-import static com.example.authentication.json.JsonConverter.toJson;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
+
 
 @Service
 @Qualifier("redis")
@@ -26,13 +26,13 @@ public class RedisCachingService implements CachingService {
 
     @Override
     public <T> void storeInCache(String key, T value, Duration duration) {
-        valueOperations.set(key, toJson(value), duration);
+        valueOperations.set(key, GSON.toJson(value), duration);
     }
 
     @Override
     public <T> Optional<T> getFromCache(String key, Class<T> type) {
         String valueFromCache = valueOperations.get(key);
-        T value = fromJson(valueFromCache, type);
+        T value = GSON.fromJson(valueFromCache, type);
         return Optional.ofNullable(value);
     }
 }

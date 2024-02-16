@@ -2,7 +2,7 @@ package com.example.authentication.controller;
 
 import com.example.authentication.dto.request.RegisterRequest;
 import com.example.authentication.dto.InfoMessageDto;
-import com.example.authentication.service.RegistrationService;
+import com.example.authentication.service.RegisterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +18,11 @@ import static com.example.authentication.message.InfoMessage.ACCOUNT_CREATED;
 @RequiredArgsConstructor
 public class RegistrationController {
 
-    private final RegistrationService registrationService;
+    private final RegisterService registerService;
 
     @PostMapping
     public ResponseEntity<InfoMessageDto> register(@Valid @RequestBody RegisterRequest request) {
-        registrationService.register(request);
+        registerService.register(request);
         return ResponseEntity.ok(
                 InfoMessageDto.of(ACCOUNT_CREATED)
         );

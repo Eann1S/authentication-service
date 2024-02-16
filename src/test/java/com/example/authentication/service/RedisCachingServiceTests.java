@@ -13,7 +13,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.example.authentication.json.JsonConverter.toJson;
+import static com.example.authentication.config.gson.GsonConfig.GSON;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,7 +43,7 @@ class RedisCachingServiceTests {
     void storeInCache(String key, String value) {
         redisCachingService.storeInCache(key, value, Duration.ofHours(1));
 
-        verify(valueOperations).set(key, toJson(value), Duration.ofHours(1));
+        verify(valueOperations).set(key, GSON.toJson(value), Duration.ofHours(1));
     }
 
     @ParameterizedTest
